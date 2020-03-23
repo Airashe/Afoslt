@@ -57,6 +57,11 @@ const DIR_VIEWS = DIRECTORY_SEPARATOR . "app" . DIRECTORY_SEPARATOR . "views" . 
  * @var string /app/layouts/
  */
 const DIR_LAYOUTS = DIRECTORY_SEPARATOR . "app" . DIRECTORY_SEPARATOR . "layouts" . DIRECTORY_SEPARATOR;
+/**
+ * Родительская директория с моделями приложения.
+ * @var string /app/models/
+ */
+const DIR_MODELS = DIRECTORY_SEPARATOR . "app" . DIRECTORY_SEPARATOR . "models" . DIRECTORY_SEPARATOR;
 /** 
  * Ключевое слово для контроллеров.
  * @var string **Controller**
@@ -233,6 +238,30 @@ abstract class Application
     }
 
     /** 
+     * Добавление нового статического маршрута приложения.
+     * 
+     * Добавляет новый статический маршрут к статическому массиву `$routes` приложения.
+     * Добавленный маршрут будет существовать, пока экземпляр приложения не завершит 
+     * работу. Конфигурационный файл статических маршрутов при этом не будет затронут.
+     * 
+     * @param string $route Адрес маршрута.
+     * @param array $params Параметры маршрута.
+     * Вида **['controller' => '%controller_name%', 'action' => '%action_name%']**
+     * 
+     * Где:
+     * 
+     * **%controller_name%** - Имя создаваемого контроллера.
+     * 
+     * **%action%** - Имя метода, который будет вызван.
+     */
+    protected static function addRoute(string $route, $params)
+    {
+        $route = preg_replace('#\{(\w+)\}#', '(?P<${1}>\w+)', $route);
+        $route = '#^' . $route . "$#";
+        Application::$routes[$route] = $params;
+    }
+
+    /** 
      * Начальная настройка среды, основанная на параметрах 
      * **манифеста**.
      * 
@@ -352,7 +381,7 @@ abstract class Application
                     $controller_name = $controller_full_name;
                     $action_name = $uri_parts[$controller_data_index + 1];
 
-                    if(Application::controllerExists($controller_name)) {
+                    if(Controller::exists($controller_name)) {
                         $arguments_index = $controller_data_index + 2;
 
                         while($arguments_index < $uri_count - 1) {
@@ -385,125 +414,11 @@ abstract class Application
                 Application::$uploadedFiles[$f_key] = $f_value;
 
         if($route_readed &&
-           Application::actionExists($controller_name, $action_name)) {
+           Controller::actionExists($controller_name, $action_name)) {
             Application::$controller = $controller_name;
             Application::$action = $action_name;
         } else
             $this->dropError(404);
-    }
-
-    /** 
-     * Проверяет существование контроллера.
-     * 
-     * @param string $controller_name Имя контроллера.
-     * @param bool $generate_full_names [опционально]
-     * 
-     * Нужно ли генерировать полные имена, при помощи метода и 
-     * `getControllerClassName`, прежде чем осуществлять проверку.
-     * 
-     * @return bool Возвращает **true** - если контроллер существует, либо **false** - если контроллер отсутствует.
-     */
-    public static function controllerExists(string $controller_name, bool $generate_full_names = true)
-    {
-        if($generate_full_names)
-            $controller_name = Application::getControllerClassName($controller_name);
-
-        $controller_file_path = $_SERVER['DOCUMENT_ROOT'] . $controller_name . ".php";
-        if(file_exists($controller_file_path))
-            return class_exists($controller_name);
-        else
-            return false;
-    }
-    /** 
-     * Проверяет существование контроллера и наличие у него события.
-     * 
-     * @param string $controller_name Имя контроллера.
-     * @param string $action_name Имя события.
-     * @param bool $generate_full_names [опционально]
-     * 
-     * Нужно ли генерировать полные имена, при помощи методов `getActionName` 
-     * и `getControllerClassName`, прежде чем осуществлять проверку.
-     * 
-     * @return bool Возвращает **true** - если событие существует, либо **false** - если событие отсутствует.
-     */
-    public static function actionExists(string $controller_name, string $action_name, bool $generate_full_names = true) {
-        if(Application::controllerExists($controller_name, $generate_full_names)) {
-            if($generate_full_names) {
-                $controller_name = Application::getControllerClassName($controller_name);
-                $action_name = Application::getActionName($action_name);
-            }
-            return method_exists($controller_name, $action_name);
-        } else
-            return false;
-    }
-
-    /** 
-     * Получение полного имени события контроллера.
-     * 
-     * Получает сокращенное имя события *( Например: index )*
-     * и возвращает его полное имя *( Например: indexAction )*.
-     * 
-     * Метод использует константы `DIR_CONTROLLERS`, `KEYWORD_ACTION` и параметр `add_keyword_to_objects`
-     * **манифеста**, чтобы сгенерировать полное имя события.
-     * 
-     * @param string $action_name Сокращенное имя события.
-     * 
-     * @return string Полное имя события.
-     */
-    public static function getActionName(string $action_name)
-    {
-
-        $action_fullname = Application::$manifest['add_keyword_to_objects'] ? $action_name . KEYWORD_ACTION : $action_name;
-        return $action_fullname;
-    }
-
-    /**
-     * Получение полного имени класса контроллера.
-     * 
-     * Получает сокращенное имя контроллера *( Например: main )* 
-     * и возвращает его полное имя *( Например: \app\controllers\MainController )*.
-     * 
-     * Метод использует константы `DIR_CONTROLLERS`, `KEYWORD_CONTROLLER` и параметр `add_keyword_to_objects`
-     * **манифеста**, чтобы сгенерировать полное имя контроллера.
-     * 
-     * @param string $controller_name Сокращенное имя контроллера.
-     * 
-     * @return string Полное имя контроллера.
-     */
-    public static function getControllerClassName(string $controller_name)
-    {
-        $controller_subdirectory = '';
-        if($lastSDPos = strrpos($controller_name, '\\')) {
-            $controller_subdirectory = substr($controller_name, 0, $lastSDPos) . DIRECTORY_SEPARATOR;
-            $controller_name = substr($controller_name, $lastSDPos + 1);
-        }
-        $contoller_path = DIR_CONTROLLERS . $controller_subdirectory . ucfirst($controller_name);
-        $contoller_path .= Application::$manifest['add_keyword_to_objects'] ? KEYWORD_CONTROLLER : '';
-        return $contoller_path;
-    }
-
-    /** 
-     * Добавление нового статического маршрута приложения.
-     * 
-     * Добавляет новый статический маршрут к статическому массиву `$routes` приложения.
-     * Добавленный маршрут будет существовать, пока экземпляр приложения не завершит 
-     * работу. Конфигурационный файл статических маршрутов при этом не будет затронут.
-     * 
-     * @param string $route Адрес маршрута.
-     * @param array $params Параметры маршрута.
-     * Вида **['controller' => '%controller_name%', 'action' => '%action_name%']**
-     * 
-     * Где:
-     * 
-     * **%controller_name%** - Имя создаваемого контроллера.
-     * 
-     * **%action%** - Имя метода, который будет вызван.
-     */
-    protected static function addRoute(string $route, $params)
-    {
-        $route = preg_replace('#\{(\w+)\}#', '(?P<${1}>\w+)', $route);
-        $route = '#^' . $route . "$#";
-        Application::$routes[$route] = $params;
     }
 
     /**
@@ -558,9 +473,9 @@ abstract class Application
     protected function main()
     {
         if(!Application::$controller == false && !Application::$action == false) {
-            $controller_name = Application::getControllerClassName(Application::$controller);
-            $action_name = Application::getActionName(Application::$action);
-            if(Application::actionExists($controller_name, $action_name, false)) {
+            $controller_name = Controller::className(Application::$controller);
+            $action_name = Controller::actionName(Application::$action);
+            if(Controller::actionExists($controller_name, $action_name, false)) {
                 $controller = new $controller_name();
                 $controller->$action_name();
             } else {

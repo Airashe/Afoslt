@@ -30,7 +30,7 @@
 return [
     'application_name' => 'My Application',
     'application_version' => '1.0.0.0',
-    'core_version' => '0.1.2.24',
+    'core_version' => '1.0.0.0',
     'build' => \App\Core\BUILD_DEBUG,
     'author' => 'Author name',
     'company' => 'Company Name',

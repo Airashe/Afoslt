@@ -17,6 +17,7 @@ namespace App\Controllers\Ftbox;
 
 use App\Core\Controller;
 use App\Core\View;
+use App\Models\Ftbox\Main;
 
 /**
  * Класс содержащий события и логику главной страницы приложения.
@@ -29,6 +30,13 @@ class MainController extends Controller
      */
     public function indexAction()
     {
-        $this->setAndRender();
+        $this->loadModel('ftbox\main');
+        
+        $arguments = [
+            'message' => $this->loadedModels[0]->message,
+            'loadedModels' => $this->loadedModels, 
+        ];
+
+        $this->setAndRender(null, $arguments);
     }
 }
