@@ -1,0 +1,31 @@
+{
+    "name": "afoslt/afoslt", 
+    "description": "Afoslt is kinda framework for web applications.", 
+    "authors": [
+        {
+            "name": "Artem Khitsenko", 
+            "email": "eblludu247@gmail.com"
+        }
+    ], 
+    "version": "2.0.0",
+    "type": "project", 
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Afoslt\\": "src/", 
+            "Afoslt\\Core\\": "src/core"
+        }
+    }, 
+    "autoload-dev": {
+        "psr-4": {
+            "Afoslt\\Tests\\": "tests/"
+        }
+    }, 
+    "config": {
+        "vendor-dir": "vendor"
+    },
+    "require": {
+        "php": ">=7.3.0", 
+        "phpunit/phpunit": "^9.5"
+    }
+}
