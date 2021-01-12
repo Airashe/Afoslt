@@ -1,1 +1,0 @@
-C:37:"PHPUnit\Runner\DefaultTestResultCache":164:{a:2:{s:7:"defects";a:1:{s:46:"Afoslt\Tests\Core\ApplicationTest::testStartUp";i:3;}s:5:"times";a:1:{s:46:"Afoslt\Tests\Core\ApplicationTest::testStartUp";d:0.004;}}}

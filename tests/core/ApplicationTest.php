@@ -18,10 +18,19 @@ namespace Afoslt\Tests\Core;
 use PHPUnit\Framework\TestCase;
 use Afoslt\Core\Application;
 
+/**
+ * Список тестов для класса Core\Application.
+ */
 final class ApplicationTest extends TestCase
 {
-    public final function testStartUp ()
+    /**
+     * Create instance of application.
+     * 
+     * @author Artem Khitsenko <eblludu247@gmail.com>
+     * @test
+     */
+    public function testCreateAppInstance ()
     {
-        
+        $application = new Application();
     }
 }

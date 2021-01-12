@@ -1,17 +1,17 @@
 <?php
 /**
- * index.php - Входная точка всего приложения.
+ * index.php - Entry point for entire framework and application.
  * PHP Version 7.3.
  *
- * @see       https://github.com/IIpocToTo4Ka/Afoslt - Репозиторий Afoslt на GitHub.
+ * @see       https://github.com/IIpocToTo4Ka/Afoslt - Afoslt GitHub repository.
  *
- * @author    Артем Хиценко <eblludu247@gmail.com>
+ * @author    Artem Khitsenko <eblludu247@gmail.com>
  * @copyright Copyright (c) 2020 IIpocTo_To4Ka.
  * @license   MIT License.
  * @package   Afoslt
- * @note      Данный код распространяется с надеждой, что он может кому-то помочь. Автор 
- * не дает гарантию, что это код может хоть как-то работать и приность пользу или вообще 
- * что-либо делать.
+ * @note      This code is distributed in the hope that it can help someone. 
+ * The author does not guarantee that this code can somehow work and be useful 
+ * or do anything at all.
  */
 
 require_once "./vendor/autoload.php";

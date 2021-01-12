@@ -1,6 +1,7 @@
 <?php
 /**
- * MyApplication.php - describes a class of a concrete application based on Afoslt.
+ * manifest.php - is a main configuration file for framework. Here you can set the 
+ * way application will work.
  * PHP Version 7.3.
  *
  * @see       https://github.com/IIpocToTo4Ka/Afoslt - Afoslt GitHub repository.
@@ -13,11 +14,3 @@
  * The author does not guarantee that this code can somehow work and be useful 
  * or do anything at all.
  */
-namespace Afoslt;
-
-use Afoslt\Core\Application;
-
-final class MyApplication extends Application
-{
-    
-}
