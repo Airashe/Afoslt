@@ -2,3 +2,4 @@
 vendor/
 #Unit test result cache
 .phpunit.result.cache
+composer.lock
