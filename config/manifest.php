@@ -14,3 +14,7 @@
  * The author does not guarantee that this code can somehow work and be useful 
  * or do anything at all.
  */
+
+return [
+    'app_name' => 'My Afoslt application', 
+];

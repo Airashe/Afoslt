@@ -21,12 +21,17 @@ namespace Afoslt\Core;
 class Application
 {
     // Constants ---------------------------------------
-
     /**
-     * Path to the core directory of framework.
-     * @var string
+     * Response code: everything is cool.
+     * @var int
      */
-    public const PATH_CORE = __DIR__;
+    public const RESPONSE_OK = 0;
+    /**
+     * Error code: application could not find manifest 
+     * file.
+     * @var int
+     */
+    public const RESPONSE_ERROR_NO_MANIFEST = -1;
     // Fields ------------------------------------------
 
     /**
@@ -88,6 +93,11 @@ class Application
     /**
      * Loading settings from manifest file.
      * 
+     * This method defines constant `PATH_APPLICATION` wich constaints 
+     * path to directory of app, represented as **C:\testDomain\**.
+     * 
+     * Also this method loads manifest file by path **\config\manifest.php**.
+     * 
      * @author Artem Khitsenko <eblludu247@gmail.com>
      * @return int
      * Returns result code of method's work.
@@ -96,7 +106,13 @@ class Application
      */
     protected function LoadManifest ()
     {
-        define("PATH_APPLICATION", dirname(dirname(self::PATH_CORE)));
+        define("PATH_APPLICATION", dirname(dirname(__DIR__)) . DIRECTORY_SEPARATOR);
+        $manifestPath = PATH_APPLICATION . "config" . DIRECTORY_SEPARATOR . "manifest.php";
+        if(!file_exists($manifestPath))
+            $this->DropApplication(self::RESPONSE_ERROR_NO_MANIFEST);
+        $this->SetManifest(require $manifestPath);
+
+        // Get info from manifest.
     }
 
     /**
@@ -105,6 +121,7 @@ class Application
     public function DropApplication (int $code, string $message = "Internal error")
     {
         echo $code . ': ' . $message;
+        exit("Afoslt application has stopped working. Code: " . $code);
     }
 
     /**

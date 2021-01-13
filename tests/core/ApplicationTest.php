@@ -24,7 +24,8 @@ use Afoslt\Core\Application;
 final class ApplicationTest extends TestCase
 {
     /**
-     * Create instance of application.
+     * Create instance of application and check it's 
+     * initialization.
      * 
      * @author Artem Khitsenko <eblludu247@gmail.com>
      * @test
@@ -32,5 +33,6 @@ final class ApplicationTest extends TestCase
     public function testCreateAppInstance ()
     {
         $application = new Application();
+        $this->assertSame("F:\\domains\\afoslt.ru\\", PATH_APPLICATION, "Checking path to application; (Change expected parameter for your local environment)");
     }
 }
