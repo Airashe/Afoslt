@@ -18,21 +18,30 @@ namespace Afoslt\Tests\Core;
 use PHPUnit\Framework\TestCase;
 use Afoslt\Core\Application;
 
+use function PHPUnit\Framework\directoryExists;
+
 /**
- * Список тестов для класса Core\Application.
+ * Tests for class `Application`: **Core\Application**.
  */
 final class ApplicationTest extends TestCase
 {
     /**
-     * Create instance of application and check it's 
-     * initialization.
+     * Creating instance of application and checking 
+     * that all preferences loading correctly.
      * 
      * @author Artem Khitsenko <eblludu247@gmail.com>
      * @test
      */
-    public function testCreateAppInstance ()
+    public function testApplicationInitialization ()
     {
         $application = new Application();
-        $this->assertSame("F:\\domains\\afoslt.ru\\", PATH_APPLICATION, "Checking path to application; (Change expected parameter for your local environment)");
+        $this->assertSame(  dirname(dirname(__DIR__)) . '\\', PATH_APPLICATION, 
+                            "Application directory not matching with application tests directory, /core and /tests must have same parent directory.");
+        $this->assertTrue(count($application::GetManifest()) > 0, "Checking that application manifest has at least one parameter.");
+        fwrite(STDERR, print_r($application::GetManifest(), TRUE));
+
+        $routesDirectoryPath = realpath(PATH_APPLICATION . $application::GetManifest()['routes_directory']);
+        $this->assertTrue(is_string($routesDirectoryPath), "Routes directory by path: " . $routesDirectoryPath . " not exists.");
+        fwrite(STDERR, print_r($application::GetRoutes(), TRUE));
     }
 }

@@ -23,12 +23,5 @@
  * or do anything at all.
  */
 return [
-    '/' => [
-        'controller' => 'Main', 
-        'action' => 'Index', 
-    ], 
-    '/about' => [
-        'controller' => 'Main', 
-        'action' => 'About', 
-    ], 
+    
 ];

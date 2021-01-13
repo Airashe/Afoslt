@@ -16,5 +16,6 @@
  */
 
 return [
-    'app_name' => 'My Afoslt application', 
+    'name' => 'My Afoslt application', 
+    'routes_directory' => 'config\\routes\\', 
 ];
