@@ -138,6 +138,8 @@ class Application
      */
     public final function __construct ()
     {
+        define("PATH_APPLICATION", dirname(dirname(__DIR__)) . DIRECTORY_SEPARATOR);
+
         $this->LoadManifest();
         $this->LoadRoutes();
         $this->Main();
@@ -155,7 +157,6 @@ class Application
      */
     private final function LoadManifest ()
     {
-        define("PATH_APPLICATION", dirname(dirname(__DIR__)) . DIRECTORY_SEPARATOR);
         $manifestPath = PATH_APPLICATION . "config" . DIRECTORY_SEPARATOR . "manifest.php";
         if(!file_exists($manifestPath))
             $this->DropApplication(self::RESPONSE_ERROR_NO_MANIFEST);
