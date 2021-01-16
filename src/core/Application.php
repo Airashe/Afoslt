@@ -201,6 +201,14 @@ class Application
     }
 
     /**
+     * 
+     */
+    private final function ReadRequest ()
+    {
+
+    }
+
+    /**
      * Application errors handler.
      */
     public function DropApplication (int $code, string $message = "Internal error")
