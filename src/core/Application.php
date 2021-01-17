@@ -23,15 +23,24 @@ class Application
     // Constants ---------------------------------------
     /**
      * Response code: everything is cool.
+     * 
      * @var int
      */
     public const RESPONSE_OK = 0;
     /**
      * Error code: application could not find manifest 
      * file.
+     * 
      * @var int
      */
     public const RESPONSE_ERROR_NO_MANIFEST = -1;
+    /**
+     * Error code: application could not find routes 
+     * matching with client's request
+     * 
+     * @var int
+     */
+    public const RESPONSE_ERROR_NO_MATCH_ROUTE = 404;
     // Fields ------------------------------------------
 
     /**
@@ -56,6 +65,32 @@ class Application
      * @var array
      */
     private static $manifest = [];
+    /**
+     * Associative array with arguments that application gets on startup 
+     * from client request.
+     * 
+     * Arguments collect all values from GET, POST and Routes.
+     * 
+     * Priority of variables source:
+     * 1. *Routes*
+     * 2. *POST*
+     * 3. *GET*
+     * 
+     * @var array
+     */
+    private static $arguments = [];
+    /**
+     * Name of controller class wich instance will be created.
+     * 
+     * @var string
+     */
+    private static $controllerName = "";
+    /**
+     * Name of controller's action that application will call.
+     * 
+     * @var string
+     */
+    private static $actionName = "";
     // Properties --------------------------------------
 
     /**
@@ -142,6 +177,7 @@ class Application
 
         $this->LoadManifest();
         $this->LoadRoutes();
+        $this->ReadRequest();
         $this->Main();
     }
 
@@ -173,7 +209,7 @@ class Application
      */
     private final function LoadRoutes ()
     {
-        $dirsForScan = [PATH_APPLICATION . self::$manifest['routes_directory']];
+        $dirsForScan = [PATH_APPLICATION . self::$manifest['routesDirectory']];
         $loadedRoutes = [];
 
         while(count($dirsForScan) > 0) {
@@ -188,7 +224,8 @@ class Application
                     else {
                         $currentRoutes = require $currentElement;
                         foreach($currentRoutes as $route => $routeParams) {
-                            $formattedRoute = preg_replace('#\{(\w+)\}#', '(?P<${1}>\w+)', $route);
+                            $formattedRoute = trim(trim($route, '/'), '\\');
+                            $formattedRoute = preg_replace('#\{(\w+)\}#', '(?P<${1}>\w+)', $formattedRoute);
                             $formattedRoute = '#^' . $formattedRoute . "$#";
                             $loadedRoutes[$formattedRoute] = $routeParams;
                         }
@@ -201,11 +238,38 @@ class Application
     }
 
     /**
+     * Read client's request to server.
      * 
+     * @return void
      */
     private final function ReadRequest ()
     {
+        $requestRoute = trim($_SERVER['REQUEST_URI'], '/');
+        $requestRoute =  explode('?', $requestRoute)[0];
 
+        if(self::$manifest['readGetPost'])
+            foreach ($_REQUEST as $requestArgKey => $requestArgValue)
+            self::$arguments[$requestArgKey] = $requestArgValue;
+
+        foreach(self::$routes as $route => $routeParams) {
+            if( preg_match($route, $requestRoute, $routeMatches) && is_array($routeParams) &&
+                array_key_exists('controller', $routeParams) && array_key_exists('action', $routeParams) ) {
+
+                    self::$controllerName = $routeParams['controller'];
+                    self::$actionName = $routeParams['action'];
+
+                    foreach($routeMatches as $matchKey => $matchValue) {
+                        if(is_string($matchKey)) {
+                            self::$arguments[$matchKey] = $routeMatches[$matchKey];
+                        }
+                    }
+
+                    return;
+
+                }
+        }
+
+        $this->DropApplication(self::RESPONSE_ERROR_NO_MATCH_ROUTE);
     }
 
     /**
@@ -213,7 +277,6 @@ class Application
      */
     public function DropApplication (int $code, string $message = "Internal error")
     {
-        echo $code . ': ' . $message;
         exit("Afoslt application has stopped working. Code: " . $code);
     }
 
@@ -233,6 +296,8 @@ class Application
      */
     private final function Main ()
     {
-        
+        var_dump(self::$controllerName);
+        var_dump(self::$actionName);
+        var_dump(self::$arguments);
     }
 }

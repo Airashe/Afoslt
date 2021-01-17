@@ -17,5 +17,6 @@
 
 return [
     'name' => 'My Afoslt application', 
-    'routes_directory' => 'config\\routes\\', 
+    'routesDirectory' => 'config\\routes\\', 
+    'readGetPost' => true, 
 ];
