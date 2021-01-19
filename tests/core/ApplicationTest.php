@@ -42,6 +42,5 @@ final class ApplicationTest extends TestCase
 
         $routesDirectoryPath = realpath(PATH_APPLICATION . $application::GetManifest()['routes_directory']);
         $this->assertTrue(is_string($routesDirectoryPath), "Routes directory by path: " . $routesDirectoryPath . " not exists.");
-        fwrite(STDERR, print_r($application::GetRoutes(), TRUE));
     }
 }

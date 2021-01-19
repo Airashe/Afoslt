@@ -15,6 +15,8 @@
  */
 namespace Afoslt\Core;
 
+use Afoslt\Core\Router;
+
 /**
  * Afoslt framework application class.
  */
@@ -44,15 +46,6 @@ class Application
     // Fields ------------------------------------------
 
     /**
-     * Array of all routes in the application.
-     * 
-     * By default, routes will be loaded from the directory 
-     * specified in the manifest by key `routes_directory`.
-     * 
-     * @var array
-     */
-    private static $routes = [];
-    /**
      * Associative array of properties, that defines how 
      * application will initialize.
      * 
@@ -80,47 +73,12 @@ class Application
      */
     private static $arguments = [];
     /**
-     * Name of controller class wich instance will be created.
+     * Instance of class router for this application.
      * 
-     * @var string
+     * @var Router
      */
-    private static $controllerName = "";
-    /**
-     * Name of controller's action that application will call.
-     * 
-     * @var string
-     */
-    private static $actionName = "";
+    private $router;
     // Properties --------------------------------------
-
-    /**
-     * Array of all routes in the application.
-     * 
-     * By default, routes will be loaded from the directory 
-     * specified in the manifest by key `routes_directory`.
-     * 
-     * @param array     $routes    New array of available routes.
-     * 
-     * @return void 
-     */
-    protected static final function SetRoutes (array $routes)
-    {
-        self::$routes = $routes;
-    }
-
-    /**
-     * Array of all routes in the application.
-     * 
-     * By default, routes will be loaded from the directory 
-     * specified in the manifest by key `routes_directory`.
-     * 
-     * @return array
-     * Returns current array of application routes.
-     */
-    public static final function GetRoutes ()
-    {
-        return self::$routes;
-    }
 
     /**
      * Associative array of properties, that defines how 
@@ -133,10 +91,12 @@ class Application
      * + `routes_directory` - Relative path to directory with routes files.
      * 
      * @param array     $manifest   New array of application's parameters.
+     * 
+     * @return void
      */
-    protected static final function SetManifest (array $manifest)
+    protected static final function SetManifest (array $manifest): void
     {
-        self::$manifest = $manifest;
+        Application::$manifest = $manifest;
     }
 
     /**
@@ -152,10 +112,74 @@ class Application
      * @return array
      * Returns current array of application parameters.
      */
-    public static final function GetManifest ()
+    public static final function GetManifest (): array
     {
-        return self::$manifest;
+        return Application::$manifest;
     }
+
+    /**
+     * Associative array with arguments that application gets on startup 
+     * from client request.
+     * 
+     * Arguments collect all values from GET, POST and Routes.
+     * 
+     * Priority of variables source:
+     * 1. *Routes*
+     * 2. *POST*
+     * 3. *GET*
+     * 
+     * @return array
+     */
+    public static final function GetArguments (): array
+    {
+        return Application::$arguments;
+    }
+
+    /**
+     * Add new argument to application's arguments array.
+     * 
+     * Associative array with arguments that application gets on startup 
+     * from client request.
+     * 
+     * Arguments collect all values from GET, POST and Routes.
+     * 
+     * Priority of variables source:
+     * 1. *Routes*
+     * 2. *POST*
+     * 3. *GET*
+     * 
+     * @param string    $name        Argument's name.
+     * @param mixed     $value       Argument's value.
+     * 
+     * @return void
+     */
+    public static final function AddArguments (string $name, mixed $value): void
+    {
+        Application::$arguments[$name] = $value;
+    }
+
+    /**
+     * Instance of class router for this application.
+     * 
+     * @param Router    $router     Instance of class router.
+     * 
+     * @return void
+     */
+    protected final function SetRouter (Router $router): void
+    {
+        $this->router = $router;
+    }
+
+    /**
+     * Instance of class router for this application.
+     * 
+     * @return Router
+     */
+    protected final function GetRouter (): Router
+    {
+        return $this->router;
+    }
+
     // Methods -----------------------------------------
 
     /**
@@ -166,7 +190,12 @@ class Application
      * 
      * Then constructor will call instance's methods in order:
      * + `LoadManifest()`
+     * + `OnReady()`
      * + `Main()`
+     * 
+     * After loading application manifest and before calling 
+     * method `OnReady()` application will create instance of 
+     * `Router` for reading avaible routes and client's request.
      * 
      * @author Artem Khitsenko <eblludu247@gmail.com>
      * @return Application
@@ -176,8 +205,10 @@ class Application
         define("PATH_APPLICATION", dirname(dirname(__DIR__)) . DIRECTORY_SEPARATOR);
 
         $this->LoadManifest();
-        $this->LoadRoutes();
-        $this->ReadRequest();
+
+        $this->SetRouter(new Router($this->LoadRoutes()));
+        $this->GetRouter()->ReadRequest($_SERVER['REQUEST_URI']);
+
         $this->Main();
     }
 
@@ -186,17 +217,15 @@ class Application
      * path **\config\manifest.php**.
      * 
      * @author Artem Khitsenko <eblludu247@gmail.com>
-     * @return int
-     * Returns result code of method's work.
-     * 
-     * `0` if there was no errors.
+     * @return void
      */
-    private final function LoadManifest ()
+    private final function LoadManifest (): void
     {
         $manifestPath = PATH_APPLICATION . "config" . DIRECTORY_SEPARATOR . "manifest.php";
         if(!file_exists($manifestPath))
-            $this->DropApplication(self::RESPONSE_ERROR_NO_MANIFEST);
-        self::SetManifest(require $manifestPath);
+            $this->DropApplication(Application::RESPONSE_ERROR_NO_MANIFEST);
+        Application::SetManifest(require $manifestPath);
+
     }
 
     /**
@@ -205,11 +234,14 @@ class Application
      * This method will also scan subdirectories for routes files.
      * 
      * @author Artem Khitsenko <eblludu247@gmail.com>
-     * @return void
+     * 
+     * @return array 
+     * Returns merge associative array of all associative 
+     * arrays in routes directory.
      */
-    private final function LoadRoutes ()
+    private final function LoadRoutes (): array
     {
-        $dirsForScan = [PATH_APPLICATION . self::$manifest['routesDirectory']];
+        $dirsForScan = [PATH_APPLICATION . Application::GetManifest()['routesDirectory']];
         $loadedRoutes = [];
 
         while(count($dirsForScan) > 0) {
@@ -223,68 +255,32 @@ class Application
                         array_push($dirsForScan, $currentElement . DIRECTORY_SEPARATOR);
                     else {
                         $currentRoutes = require $currentElement;
-                        foreach($currentRoutes as $route => $routeParams) {
-                            $formattedRoute = trim(trim($route, '/'), '\\');
-                            $formattedRoute = preg_replace('#\{(\w+)\}#', '(?P<${1}>\w+)', $formattedRoute);
-                            $formattedRoute = '#^' . $formattedRoute . "$#";
-                            $loadedRoutes[$formattedRoute] = $routeParams;
-                        }
+                        if(is_array($currentRoutes))
+                            array_merge($loadedRoutes, $currentRoutes);
                     }
                 }
 
             }
         }
-        self::SetRoutes($loadedRoutes);
-    }
-
-    /**
-     * Read client's request to server.
-     * 
-     * @return void
-     */
-    private final function ReadRequest ()
-    {
-        $requestRoute = trim($_SERVER['REQUEST_URI'], '/');
-        $requestRoute =  explode('?', $requestRoute)[0];
-
-        if(self::$manifest['readGetPost'])
-            foreach ($_REQUEST as $requestArgKey => $requestArgValue)
-            self::$arguments[$requestArgKey] = $requestArgValue;
-
-        foreach(self::$routes as $route => $routeParams) {
-            if( preg_match($route, $requestRoute, $routeMatches) && is_array($routeParams) &&
-                array_key_exists('controller', $routeParams) && array_key_exists('action', $routeParams) ) {
-
-                    self::$controllerName = $routeParams['controller'];
-                    self::$actionName = $routeParams['action'];
-
-                    foreach($routeMatches as $matchKey => $matchValue) {
-                        if(is_string($matchKey)) {
-                            self::$arguments[$matchKey] = $routeMatches[$matchKey];
-                        }
-                    }
-
-                    return;
-
-                }
-        }
-
-        $this->DropApplication(self::RESPONSE_ERROR_NO_MATCH_ROUTE);
+        return $loadedRoutes;
     }
 
     /**
      * Application errors handler.
+     * 
+     * @return void
      */
-    public function DropApplication (int $code, string $message = "Internal error")
+    protected function DropApplication (int $code, string $message = "Internal error"): void
     {
-        exit("Afoslt application has stopped working. Code: " . $code);
+        exit("Afoslt application has stopped working. Code: " . $code . " " . $message);
     }
 
     /**
      * This method executes before `Main`.
+     * 
      * @return void
      */
-    protected function OnReady ()
+    protected function OnReady (): void
     {
         
     }
@@ -293,11 +289,11 @@ class Application
      * Entry point of Application.
      * 
      * @author Artem Khitsenko <eblludu247@gmail.com>
+     * 
+     * @return void
      */
-    private final function Main ()
+    private final function Main (): void
     {
-        var_dump(self::$controllerName);
-        var_dump(self::$actionName);
-        var_dump(self::$arguments);
+        
     }
 }
