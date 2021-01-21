@@ -156,13 +156,14 @@ final class Router
      * 
      * @param ?string        $requestURI         Request URI.
      * 
-     * @return void
+     * @return bool
+     * Returns `true` if requests matches with any of router's routes.
      */
-    public final function ReadRequest (?string $requesURI): void
+    public final function ReadRequest (?string $requesURI): bool
     {
         if($requesURI != null) {
             $requestRoute = trim($requesURI, '/');
-            $requestRoute =  explode('?', $requestRoute)[0];
+            $requestRoute = explode('?', $requestRoute)[0];
             
             if(Application::GetManifest()['readGetPost'])
                 foreach ($_REQUEST as $requestArgKey => $requestArgValue)
@@ -174,6 +175,7 @@ final class Router
                     
                         $this->SetControllerName($routeParams['controller']);
                         $this->SetActionName($routeParams['action']);
+                        return true;
                     
                         foreach($routeMatches as $matchKey => $matchValue) {
                             if(is_string($matchKey)) {
@@ -183,5 +185,6 @@ final class Router
                     }
             }
         }
+        return false;
     }
 }

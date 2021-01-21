@@ -23,5 +23,5 @@
  * or do anything at all.
  */
 return [
-    '/index/{page}' => ['controller' => 'test', 'action' => 'test'], 
+    
 ];

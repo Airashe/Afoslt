@@ -31,8 +31,10 @@ final class ApplicationTest extends TestCase
      * 
      * @author Artem Khitsenko <eblludu247@gmail.com>
      * @test
+     * 
+     * @return void
      */
-    public function testApplicationInitialization ()
+    public function testApplicationInitialization (): void
     {
         $application = new Application();
         // Checking that PATH_APPLICATION defines correctly.
