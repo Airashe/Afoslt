@@ -207,7 +207,9 @@ class Application
         $this->LoadManifest();
 
         $this->SetRouter(new Router($this->LoadRoutes()));
-        $this->GetRouter()->ReadRequest($_SERVER['REQUEST_URI']);
+
+        $reuqestURI = is_array($_SERVER) && array_key_exists('REQUEST_URI', $_SERVER) ? $_SERVER['REQUEST_URI'] : '';
+        $this->GetRouter()->ReadRequest($reuqestURI);
 
         $this->Main();
     }
