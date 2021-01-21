@@ -28,4 +28,12 @@ return [
      * Copy $_GET & $_POST values to application's arguments.
      */
     'readGetPost' => true, 
+    /**
+     * Add keywords when using application classes and functions.
+     */
+    'addKeywords' => true, 
+    /**
+     * Keyword for controllers.
+     */
+    'controllersKeyword' => 'Controller', 
 ];

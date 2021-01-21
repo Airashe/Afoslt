@@ -23,5 +23,5 @@
  * or do anything at all.
  */
 return [
-    
+    '/' => ['controller' => 'Examples\Example', 'action' => 'Example'], 
 ];

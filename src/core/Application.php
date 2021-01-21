@@ -19,6 +19,8 @@ use Afoslt\Core\Router;
 
 /**
  * Afoslt framework application class.
+ * 
+ * @author Artem Khitsenko <eblludu247@gmail.com>
  */
 class Application
 {
@@ -272,6 +274,8 @@ class Application
         $manifest['name'] = array_key_exists('name', $manifest) ? $manifest['name'] : "My Afoslt application";
         $manifest['routesDirectory'] = array_key_exists('routesDirectory', $manifest) ? $manifest['routesDirectory'] : "config" . DIRECTORY_SEPARATOR . "routes" . DIRECTORY_SEPARATOR;
         $manifest['readGetPost'] = array_key_exists('readGetPost', $manifest) ? $manifest['readGetPost'] : true;
+        $manifest['controllersDirectory'] = array_key_exists('controllersDirectory', $manifest) ? $manifest['controllersDirectory'] : "controllers" . DIRECTORY_SEPARATOR;
+        $manifest['controllersKeyword'] = array_key_exists('controllersKeyword', $manifest) ? $manifest['controllersKeyword'] : "Controller";
         Application::SetManifest($manifest);
     }
 
