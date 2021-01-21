@@ -23,6 +23,7 @@ use Afoslt\Core\Router;
 class Application
 {
     // Constants ---------------------------------------
+
     /**
      * Response code: everything is cool.
      * 
@@ -78,6 +79,13 @@ class Application
      * @var Router
      */
     private $router;
+    /**
+     * Associative array for storing values from 
+     * configurations files.
+     * 
+     * @var array
+     */
+    private static $configuration = [];
     // Properties --------------------------------------
 
     /**
@@ -180,6 +188,31 @@ class Application
         return $this->router;
     }
 
+    /**
+     * Associative array for storing values from 
+     * configurations files.
+     * 
+     * Add new values to application's configuration from 
+     * another array.
+     * 
+     * @return void
+     */
+    protected static final function AddConfiguration (array $configValues): void
+    {
+        Application::$configuration = array_merge(Application::$configuration, $configValues);
+    }
+
+    /**
+     * Associative array for storing values from 
+     * configurations files.
+     * 
+     * @return array
+     */
+    public static final function GetConfiguration (): array
+    {
+        return Application::$configuration;
+    }
+
     // Methods -----------------------------------------
 
     /**
@@ -202,6 +235,14 @@ class Application
      */
     public final function __construct ()
     {
+        /**
+         * **Afoslt** constant.
+         * 
+         * Contains path to the directory of all applications folder relative to 
+         * Application.php.
+         * 
+         * @var string
+         */
         define("PATH_APPLICATION", dirname(dirname(__DIR__)) . DIRECTORY_SEPARATOR);
 
         $this->LoadManifest();
@@ -272,6 +313,31 @@ class Application
     }
 
     /**
+     * Loading configuration file from configuration folder.
+     * 
+     * Configuration files must have php extension and return 
+     * an associative array.
+     * 
+     * Path to configuration file must be relative to configurations directory.
+     * 
+     * @param string    $relativeCfgPath        Relative path to configuration file.
+     */
+    public final function LoadConfiguration (string $relativeCfgPath): bool
+    {
+        $relativeCfgPath = trim($relativeCfgPath, "\\/");
+        
+        $cfgPath = PATH_APPLICATION . "config" . DIRECTORY_SEPARATOR . $relativeCfgPath;
+        if(file_exists($cfgPath)) {
+            $configData = require $cfgPath;
+            if(is_array($configData)) {
+                Application::AddConfiguration($configData);
+                return false;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Application errors handler.
      * 
      * @return void
@@ -286,10 +352,7 @@ class Application
      * 
      * @return void
      */
-    protected function OnReady (): void
-    {
-        
-    }
+    protected function OnReady (): void { }
 
     /**
      * Entry point of Application.

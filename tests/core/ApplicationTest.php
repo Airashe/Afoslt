@@ -34,11 +34,22 @@ final class ApplicationTest extends TestCase
      * 
      * @return void
      */
-    public function testApplicationInitialization (): void
+    public function testApplicationInitialization (): Application
     {
+        /**
+         **Afoslt test** constant.
+         * 
+         * Contains path to the directory of all applications folder relative to 
+         * ApplicationTest.php.
+         * 
+         * @var string
+         */
+        define("TESTS_PATH_APPLICATION", dirname(dirname(__DIR__)) . DIRECTORY_SEPARATOR);
+
         $application = new Application();
+
         // Checking that PATH_APPLICATION defines correctly.
-        $this->assertSame(  dirname(dirname(__DIR__)) . DIRECTORY_SEPARATOR, PATH_APPLICATION, 
+        $this->assertSame(  TESTS_PATH_APPLICATION, PATH_APPLICATION, 
                             "Application directory not matching with application tests directory, /core and /tests must have same parent directory.");
         // Checking that application could load manifest.
         $manifestPath = PATH_APPLICATION . "config" . DIRECTORY_SEPARATOR . "manifest.php";
@@ -53,5 +64,35 @@ final class ApplicationTest extends TestCase
         // Checking that routes directory exists.
         $routesDirectoryPath = realpath(PATH_APPLICATION . $application::GetManifest()['routesDirectory']);
         $this->assertTrue(is_string($routesDirectoryPath), "Routes directory by path: " . $routesDirectoryPath . " not exists.");
+
+        return $application;
+    }
+
+    /**
+     * Testing that application could load additional configurations files.
+     * 
+     * @author Artem Khitsenko <eblludu247@gmail.com>
+     * @test
+     * @depends testApplicationInitialization
+     */
+    public function testLoadingAdditionalConfigurations (Application $application): void
+    {
+        /**
+         * Creating test configuration file.
+         */
+        $testConfigDirectory = TESTS_PATH_APPLICATION . "config" . DIRECTORY_SEPARATOR . "tests" . DIRECTORY_SEPARATOR;
+        $testConfigFile = $testConfigDirectory . "testcfg.php";
+
+        mkdir($testConfigDirectory);
+        file_put_contents($testConfigFile, "<?php return ['testKey' => 'testValue'];");
+
+        // Checking that application correctly loading additional cfg files.
+        $application->LoadConfiguration('tests' . DIRECTORY_SEPARATOR . 'testcfg.php');
+        $this->assertTrue(array_key_exists('testKey', Application::GetConfiguration()), "Application did not add test configuration file to associative array.");
+        $this->assertSame(Application::GetConfiguration()['testKey'], 'testValue', "Value from test configuration file is not valid.");
+        
+        // Removing test configuration file.
+        unlink($testConfigFile);
+        rmdir($testConfigDirectory);
     }
 }
