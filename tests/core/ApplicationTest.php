@@ -35,11 +35,20 @@ final class ApplicationTest extends TestCase
     public function testApplicationInitialization ()
     {
         $application = new Application();
-        $this->assertSame(  dirname(dirname(__DIR__)) . '\\', PATH_APPLICATION, 
+        // Checking that PATH_APPLICATION defines correctly.
+        $this->assertSame(  dirname(dirname(__DIR__)) . DIRECTORY_SEPARATOR, PATH_APPLICATION, 
                             "Application directory not matching with application tests directory, /core and /tests must have same parent directory.");
-        $this->assertTrue(count($application::GetManifest()) > 0, "Checking that application manifest has at least one parameter.");
-        fwrite(STDERR, print_r($application::GetManifest(), TRUE));
+        // Checking that application could load manifest.
+        $manifestPath = PATH_APPLICATION . "config" . DIRECTORY_SEPARATOR . "manifest.php";
+        $this->assertTrue(  file_exists($manifestPath), 
+                            "Tests could not find manifest file.");
+        fwrite(STDOUT, "Manifest path: " . $manifestPath . "\n");
 
+        // Checking that manifest have at least one value.
+        $this->assertTrue(count($application::GetManifest()) > 0, "Checking that application manifest has at least one parameter.");
+        fwrite(STDERR, "Manifest data: " . print_r($application::GetManifest(), TRUE) . "\n");
+
+        // Checking that routes directory exists.
         $routesDirectoryPath = realpath(PATH_APPLICATION . $application::GetManifest()['routes_directory']);
         $this->assertTrue(is_string($routesDirectoryPath), "Routes directory by path: " . $routesDirectoryPath . " not exists.");
     }

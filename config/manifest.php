@@ -16,7 +16,16 @@
  */
 
 return [
+    /**
+     * Name of your Afoslt application.
+     */
     'name' => 'My Afoslt application', 
+    /**
+     * Directory where application sould search for routes cfg files.
+     */
     'routesDirectory' => 'config\\routes\\', 
+    /**
+     * Copy $_GET & $_POST values to application's arguments.
+     */
     'readGetPost' => true, 
 ];

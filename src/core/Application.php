@@ -224,8 +224,12 @@ class Application
         $manifestPath = PATH_APPLICATION . "config" . DIRECTORY_SEPARATOR . "manifest.php";
         if(!file_exists($manifestPath))
             $this->DropApplication(Application::RESPONSE_ERROR_NO_MANIFEST);
-        Application::SetManifest(require $manifestPath);
 
+        $manifest = require $manifestPath;
+        $manifest['name'] = array_key_exists('name', $manifest) ? $manifest['name'] : "My Afoslt application";
+        $manifest['routesDirectory'] = array_key_exists('routesDirectory', $manifest) ? $manifest['routesDirectory'] : "config" . DIRECTORY_SEPARATOR . "routes" . DIRECTORY_SEPARATOR;
+        $manifest['readGetPost'] = array_key_exists('readGetPost', $manifest) ? $manifest['readGetPost'] : true;
+        Application::SetManifest($manifest);
     }
 
     /**
