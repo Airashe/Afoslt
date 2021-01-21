@@ -77,22 +77,21 @@ final class ApplicationTest extends TestCase
      */
     public function testLoadingAdditionalConfigurations (Application $application): void
     {
-        /**
-         * Creating test configuration file.
-         */
-        $testConfigDirectory = TESTS_PATH_APPLICATION . "config" . DIRECTORY_SEPARATOR . "tests" . DIRECTORY_SEPARATOR;
-        $testConfigFile = $testConfigDirectory . "testcfg.php";
+        // Copy test configuration file.     
+        $tmpConfigDirectory = TESTS_PATH_APPLICATION . "config" . DIRECTORY_SEPARATOR . "tests" . DIRECTORY_SEPARATOR;
+        $applicationTestConfigTarget = $tmpConfigDirectory . "testcfg.php";
+        $applicationTestConfigOrigin = TESTS_PATH_APPLICATION . "tests" . DIRECTORY_SEPARATOR . "src" . DIRECTORY_SEPARATOR . "testcfg.php";
 
-        mkdir($testConfigDirectory);
-        file_put_contents($testConfigFile, "<?php return ['testKey' => 'testValue'];");
+        mkdir($tmpConfigDirectory);
+        copy($applicationTestConfigOrigin, $applicationTestConfigTarget);
 
         // Checking that application correctly loading additional cfg files.
         $application->LoadConfiguration('tests' . DIRECTORY_SEPARATOR . 'testcfg.php');
         $this->assertTrue(array_key_exists('testKey', Application::GetConfiguration()), "Application did not add test configuration file to associative array.");
         $this->assertSame(Application::GetConfiguration()['testKey'], 'testValue', "Value from test configuration file is not valid.");
         
-        // Removing test configuration file.
-        unlink($testConfigFile);
-        rmdir($testConfigDirectory);
+        // Removing copy of test configuration file.
+        unlink($applicationTestConfigTarget);
+        rmdir($tmpConfigDirectory);
     }
 }

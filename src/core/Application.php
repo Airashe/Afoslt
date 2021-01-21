@@ -46,6 +46,13 @@ class Application
      * @var int
      */
     public const RESPONSE_ERROR_NO_MATCH_ROUTE = 404;
+    /**
+     * Error code: application could not find requested 
+     * controller class.
+     * 
+     * @var int
+     */
+    public const RESPONSE_ERROR_CONTROLLER_DOESNT_EXISTS = -2;
     // Fields ------------------------------------------
 
     /**
@@ -245,13 +252,14 @@ class Application
          * 
          * @var string
          */
-        define("PATH_APPLICATION", dirname(dirname(__DIR__)) . DIRECTORY_SEPARATOR);
+        if(!defined("PATH_APPLICATION"))
+            define("PATH_APPLICATION", dirname(dirname(__DIR__)) . DIRECTORY_SEPARATOR);
 
         $this->LoadManifest();
 
         $this->SetRouter(new Router($this->LoadRoutes()));
 
-        $reuqestURI = is_array($_SERVER) && array_key_exists('REQUEST_URI', $_SERVER) ? $_SERVER['REQUEST_URI'] : '';
+        $reuqestURI = is_array($_SERVER) && array_key_exists('REQUEST_URI', $_SERVER) ? $_SERVER['REQUEST_URI'] : '/';
         $this->GetRouter()->ReadRequest($reuqestURI);
 
         $this->Main();
@@ -264,7 +272,7 @@ class Application
      * @author Artem Khitsenko <eblludu247@gmail.com>
      * @return void
      */
-    private final function LoadManifest (): void
+    private function LoadManifest (): void
     {
         $manifestPath = PATH_APPLICATION . "config" . DIRECTORY_SEPARATOR . "manifest.php";
         if(!file_exists($manifestPath))
@@ -290,7 +298,7 @@ class Application
      * Returns merge associative array of all associative 
      * arrays in routes directory.
      */
-    private final function LoadRoutes (): array
+    private function LoadRoutes (): array
     {
         $dirsForScan = [PATH_APPLICATION . Application::GetManifest()['routesDirectory']];
         $loadedRoutes = [];
@@ -307,7 +315,7 @@ class Application
                     else {
                         $currentRoutes = require $currentElement;
                         if(is_array($currentRoutes))
-                            array_merge($loadedRoutes, $currentRoutes);
+                            $loadedRoutes = array_merge($loadedRoutes, $currentRoutes);
                     }
                 }
 
@@ -365,8 +373,16 @@ class Application
      * 
      * @return void
      */
-    private final function Main (): void
+    private function Main (): void
     {
-        
+        $controllerName = $this->router->GetControllerName();
+        if(!empty($controllerName)) {
+            $controllerFullName = Controller::ClassName($controllerName);
+            if(Controller::Exists($controllerFullName)) {
+                $controller = new $controllerFullName;
+            }
+        }
+
+        $this->DropApplication(Application::RESPONSE_ERROR_CONTROLLER_DOESNT_EXISTS, "Controller doesn't exists");
     }
 }

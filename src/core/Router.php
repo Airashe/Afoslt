@@ -140,7 +140,7 @@ final class Router
      * 
      * @return void
      */
-    private final function ReadRoutesArray (array $routes): void
+    private function ReadRoutesArray (array $routes): void
     {
         foreach ($routes as $route => $routeParams) {
             $formattedRoute = trim(trim($route, '/'), '\\');
