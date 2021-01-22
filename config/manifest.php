@@ -56,4 +56,9 @@ return [
      * @var string
      */
     'actionsKeyword' => 'Action', 
+    /** 
+     * Defines that session_start() will be called or not.
+     * @var bool
+     */ 
+    'startupSession' => true, 
 ];

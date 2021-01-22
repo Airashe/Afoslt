@@ -76,6 +76,7 @@ class Application
      * + `controllersKeyword` - Keyword for Controllers.
      * + `actionsKeyword` - Keyword for Actions.
      * + `build` - Defines work mode that application will use.
+     * + `startupSession` - Defines that session_start() will be called or not.
      * @var array
      */
     private static $manifest = [];
@@ -127,6 +128,7 @@ class Application
      * + `controllersKeyword` - Keyword for Controllers.
      * + `actionsKeyword` - Keyword for Actions.
      * + `build` - Defines work mode that application will use.
+     * + `startupSession` - Defines that session_start() will be called or not.
      * 
      * @param array     $manifest   New array of application's parameters.
      * 
@@ -150,6 +152,7 @@ class Application
      * + `controllersKeyword` - Keyword for Controllers.
      * + `actionsKeyword` - Keyword for Actions.
      * + `build` - Defines work mode that application will use.
+     * + `startupSession` - Defines that session_start() will be called or not.
      * 
      * @return array
      * Returns current array of application parameters.
@@ -310,6 +313,9 @@ class Application
 
         $this->LoadManifest();
 
+        if(Application::GetManifest()['startupSession'])
+            session_start();
+
         $this->SetRouter(new Router($this->LoadRoutes()));
 
         if(is_array($_SERVER) && array_key_exists('REQUEST_URI', $_SERVER))
@@ -340,6 +346,7 @@ class Application
         $manifest['controllersKeyword'] = array_key_exists('controllersKeyword', $manifest) ? $manifest['controllersKeyword'] : "Controller";
         $manifest['actionsKeyword'] = array_key_exists('actionsKeyword', $manifest) ? $manifest['actionsKeyword'] : "Action";
         $manifest['build'] = array_key_exists('build', $manifest) ? $manifest['build'] : BUILD_DEBUG;
+        $manifest['startupSession'] = array_key_exists('startupSession', $manifest) ? $manifest['startupSession'] : true;
         Application::SetManifest($manifest);
 
         // Apply manifest values.
