@@ -2,6 +2,7 @@
 
 namespace Afoslt\Tests\Core;
 
+use Afoslt\Core\Application;
 use PHPUnit\Framework\TestCase;
 use Afoslt\Core\Router;
 
@@ -10,6 +11,34 @@ use Afoslt\Core\Router;
  */
 final class RouterTest extends TestCase
 {
+    /**
+     * Instance of an application for tests.
+     * @var Application
+     */
+    public static $appInstance;
+
+    public static function setUpBeforeClass(): void
+    {
+        if(!defined("IN_UNIT_TESTS"))
+            define("IN_UNIT_TESTS", true);
+
+        if(!defined("TEST_PATH_APPLICATION"))
+            define("TEST_PATH_APPLICATION", dirname(dirname(__DIR__)) . DIRECTORY_SEPARATOR);
+
+        if(!defined("PATH_APPLICATION"))
+            define("PATH_APPLICATION", dirname(dirname(__DIR__)) . DIRECTORY_SEPARATOR);
+
+        ControllerTest::$appInstance = new Application;
+    }
+
+    public static function tearDownAfterClass(): void
+    {
+        if(!defined("TEST_PATH_APPLICATION"))
+            define("TEST_PATH_APPLICATION", dirname(dirname(__DIR__)) . DIRECTORY_SEPARATOR);
+
+        ControllerTest::$appInstance = null;
+    }
+
     /**
      * Creating instance of router and give it associative 
      * arrays of routes.

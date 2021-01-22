@@ -18,26 +18,42 @@
 return [
     /**
      * Name of your Afoslt application.
+     * @var string
      */
     'name' => 'My Afoslt application', 
     /**
+     * Application version.
+     * @var string
+     */
+    'version' => '1.0', 
+    /**
+     * Application work mode.
+     * @var int
+     */
+    'build' => BUILD_DEBUG, 
+    /**
      * Directory where application sould search for routes cfg files.
+     * @var string
      */
     'routesDirectory' => 'config\\routes\\', 
     /**
      * Copy $_GET & $_POST values to application's arguments.
+     * @var bool
      */
     'readGetPost' => true, 
     /**
      * Add keywords when using application classes and functions.
+     * @var bool
      */
     'addKeywords' => true, 
     /**
      * Keyword for controllers.
+     * @var string
      */
     'controllersKeyword' => 'Controller', 
     /**
      * Keyword for actions.
+     * @var string
      */
     'actionsKeyword' => 'Action', 
 ];

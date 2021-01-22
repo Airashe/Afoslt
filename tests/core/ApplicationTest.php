@@ -25,6 +25,17 @@ use function PHPUnit\Framework\directoryExists;
  */
 final class ApplicationTest extends TestCase
 {
+    public static function setUpBeforeClass(): void
+    {
+        if(!defined("IN_UNIT_TESTS"))
+            define("IN_UNIT_TESTS", true);
+
+        if(!defined("TEST_PATH_APPLICATION"))
+            define("TEST_PATH_APPLICATION", dirname(dirname(__DIR__)) . DIRECTORY_SEPARATOR);
+
+        
+    }
+
     /**
      * Creating instance of application and checking 
      * that all preferences loading correctly.
@@ -36,22 +47,10 @@ final class ApplicationTest extends TestCase
      */
     public function testApplicationInitialization (): Application
     {
-        if(!defined("TESTS_PATH_APPLICATION")) {
-            /**
-             **Afoslt test** constant.
-             * 
-             * Contains path to the directory of all applications folder relative to 
-             * ApplicationTest.php.
-             * 
-             * @var string
-             */
-            define("TESTS_PATH_APPLICATION", dirname(dirname(__DIR__)) . DIRECTORY_SEPARATOR);
-        }
-
         $application = new Application();
 
         // Checking that PATH_APPLICATION defines correctly.
-        $this->assertSame(  TESTS_PATH_APPLICATION, PATH_APPLICATION, 
+        $this->assertSame(  TEST_PATH_APPLICATION, PATH_APPLICATION, 
                             "Application directory not matching with application tests directory, /core and /tests must have same parent directory.");
         // Checking that application could load manifest.
         $manifestPath = PATH_APPLICATION . "config" . DIRECTORY_SEPARATOR . "manifest.php";
@@ -80,12 +79,14 @@ final class ApplicationTest extends TestCase
     public function testLoadingAdditionalConfigurations (Application $application): void
     {
         // Copy test configuration file.     
-        $tmpConfigDirectory = TESTS_PATH_APPLICATION . "config" . DIRECTORY_SEPARATOR . "tests" . DIRECTORY_SEPARATOR;
+        $tmpConfigDirectory = TEST_PATH_APPLICATION . "config" . DIRECTORY_SEPARATOR . "tests" . DIRECTORY_SEPARATOR;
         $applicationTestConfigTarget = $tmpConfigDirectory . "testcfg.php";
-        $applicationTestConfigOrigin = TESTS_PATH_APPLICATION . "tests" . DIRECTORY_SEPARATOR . "src" . DIRECTORY_SEPARATOR . "testcfg.php";
+        $applicationTestConfigOrigin = TEST_PATH_APPLICATION . "tests" . DIRECTORY_SEPARATOR . "src" . DIRECTORY_SEPARATOR . "testcfg.php";
 
-        mkdir($tmpConfigDirectory);
-        copy($applicationTestConfigOrigin, $applicationTestConfigTarget);
+        if(!file_exists($applicationTestConfigTarget)) {
+            mkdir($tmpConfigDirectory);
+            copy($applicationTestConfigOrigin, $applicationTestConfigTarget);
+        }
 
         // Checking that application correctly loading additional cfg files.
         $application->LoadConfiguration('tests' . DIRECTORY_SEPARATOR . 'testcfg.php');

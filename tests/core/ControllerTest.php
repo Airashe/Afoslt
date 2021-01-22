@@ -13,6 +13,54 @@ use PHPUnit\Framework\TestCase;
 final class ControllerTest extends TestCase
 {
     /**
+     * Instance of an application.
+     * @var Application
+     */
+    public static $appInstance;
+
+    public static function setUpBeforeClass(): void
+    {
+        if(!defined("IN_UNIT_TESTS"))
+            define("IN_UNIT_TESTS", true);
+
+        if(!defined("TEST_PATH_APPLICATION"))
+            define("TEST_PATH_APPLICATION", dirname(dirname(__DIR__)) . DIRECTORY_SEPARATOR);
+
+        if(!defined("PATH_APPLICATION"))
+            define("PATH_APPLICATION", dirname(dirname(__DIR__)) . DIRECTORY_SEPARATOR);
+
+        // Copy TestController file.     
+        $tmpControllerDirectory = TEST_PATH_APPLICATION . "src" . DIRECTORY_SEPARATOR . "controllers" . DIRECTORY_SEPARATOR . "tests" . DIRECTORY_SEPARATOR;
+        $applicationTestControllerTarget = $tmpControllerDirectory . "TestController.php";
+        $applicationTestControllerOrigin = TEST_PATH_APPLICATION . "tests" . DIRECTORY_SEPARATOR . "src" . DIRECTORY_SEPARATOR . "TestController.php";
+
+        if(file_exists($applicationTestControllerTarget)) {
+            unlink($applicationTestControllerTarget);
+            rmdir($tmpControllerDirectory);
+        }
+
+        mkdir($tmpControllerDirectory);
+        copy($applicationTestControllerOrigin, $applicationTestControllerTarget);
+
+        ControllerTest::$appInstance = new Application;
+    }
+
+    public static function tearDownAfterClass(): void
+    {
+        if(!defined("TEST_PATH_APPLICATION"))
+            define("TEST_PATH_APPLICATION", dirname(dirname(__DIR__)) . DIRECTORY_SEPARATOR);
+
+        // Remove copy of TestController.
+        $tmpControllerDirectory = TEST_PATH_APPLICATION . "src" . DIRECTORY_SEPARATOR . "controllers" . DIRECTORY_SEPARATOR . "tests" . DIRECTORY_SEPARATOR;
+        $applicationTestControllerTarget = $tmpControllerDirectory . "TestController.php";
+
+        unlink($applicationTestControllerTarget);
+        rmdir($tmpControllerDirectory);
+
+        ControllerTest::$appInstance = null;
+    }
+
+    /**
      * Test that checks results of Controller's static 
      * method `ClassName`.
      * 
@@ -55,15 +103,8 @@ final class ControllerTest extends TestCase
      */
     public function testControllerExists (): void
     {
-        $this->CreateTestController(true);
-
-        if(!defined("PATH_APPLICATION"))
-            define("PATH_APPLICATION", dirname(dirname(__DIR__)));
-
         $this->assertTrue(Controller::Exists("Afoslt\Controllers\Tests\TestController"), "Can not find TestController with method `Exists`.");
         $this->assertTrue(Controller::Exists("Tests\TestController"), "Can not find TestController with method `Exists`.");
-        
-        $this->RemoveTestController();
     }
 
     /**
@@ -75,8 +116,6 @@ final class ControllerTest extends TestCase
      */
     public function testMethodExists (): void
     {
-        $this->CreateTestController();
-
         $controller = new TestController;
 
         $methodsNames = [
@@ -95,9 +134,6 @@ final class ControllerTest extends TestCase
 
             $this->assertSame(method_exists($controller, $methodName), $methodExistsResult, $methodName . ": MethodExists of an instance returned different value than `method_exists`.");
         }
-       
-
-        $this->RemoveTestController();
     }
 
     /**
@@ -109,8 +145,6 @@ final class ControllerTest extends TestCase
      */
     public function testActionExists (): void
     {
-        $this->CreateTestController(true);
-
         $actionsTests = [
             "TestAction" => true, 
             "Test" => true, 
@@ -131,8 +165,6 @@ final class ControllerTest extends TestCase
             $this->assertSame(  $expectedResult, $actionExistsResult, 
                                 $actionName . ": expected " . ($expectedResult ? "true" : "false") . " but `ActionExists` returned " . ($actionExistsResult ? "true" : "false"));
         }
-
-        $this->RemoveTestController();
     }
 
     /**
@@ -144,8 +176,6 @@ final class ControllerTest extends TestCase
      */
     public function testActionName (): void
     {
-        $this->CreateTestController(true);
-
         $actionsTests = [
             "TestAction" => "TestAction", 
             "Test" => "TestAction", 
@@ -162,37 +192,6 @@ final class ControllerTest extends TestCase
 
             $this->assertSame($expectedResult, $actualResult, $actionName . " expected " . $expectedResult . " but `ActionName` returned " . $actualResult);
         }
-
-        $this->RemoveTestController();
-    }
-
-    /**
-     * Create test controller.
-     * 
-     * @param bool      $startApplication       Defines need to start new instance of application class.
-     * 
-     * @return void
-     */
-    private function CreateTestController (bool $startApplication = false): void
-    {
-        if(!defined("TEST_PATH_APPLICATION"))
-            define("TEST_PATH_APPLICATION", dirname(dirname(__DIR__)) . DIRECTORY_SEPARATOR);
-
-        // Copy TestController file.     
-        $tmpControllerDirectory = TEST_PATH_APPLICATION . "src" . DIRECTORY_SEPARATOR . "controllers" . DIRECTORY_SEPARATOR . "tests" . DIRECTORY_SEPARATOR;
-        $applicationTestControllerTarget = $tmpControllerDirectory . "TestController.php";
-        $applicationTestControllerOrigin = TEST_PATH_APPLICATION . "tests" . DIRECTORY_SEPARATOR . "src" . DIRECTORY_SEPARATOR . "TestController.php";
-
-        if(file_exists($applicationTestControllerTarget)) {
-            unlink($applicationTestControllerTarget);
-            rmdir($tmpControllerDirectory);
-        }
-
-        mkdir($tmpControllerDirectory);
-        copy($applicationTestControllerOrigin, $applicationTestControllerTarget);
-
-        if($startApplication)
-            new Application;
     }
 
     /**
@@ -202,14 +201,6 @@ final class ControllerTest extends TestCase
      */
     private function RemoveTestController (): void
     {
-        if(!defined("TEST_PATH_APPLICATION"))
-            define("TEST_PATH_APPLICATION", dirname(dirname(__DIR__)) . DIRECTORY_SEPARATOR);
-
-        // Remove copy of TestController.
-        $tmpControllerDirectory = TEST_PATH_APPLICATION . "src" . DIRECTORY_SEPARATOR . "controllers" . DIRECTORY_SEPARATOR . "tests" . DIRECTORY_SEPARATOR;
-        $applicationTestControllerTarget = $tmpControllerDirectory . "TestController.php";
-
-        unlink($applicationTestControllerTarget);
-        rmdir($tmpControllerDirectory);
+        
     }
 }

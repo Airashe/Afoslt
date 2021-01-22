@@ -16,6 +16,7 @@
 namespace Afoslt\Core;
 
 use Afoslt\Core\Router;
+use ReflectionClass;
 
 /**
  * Afoslt framework application class.
@@ -285,8 +286,14 @@ class Application
          * 
          * @var string
          */
-        if(!defined("PATH_APPLICATION"))
-            define("PATH_APPLICATION", dirname(dirname(__DIR__)) . DIRECTORY_SEPARATOR);
+        if(!defined("PATH_APPLICATION")) {
+            $path = dirname(dirname(dirname( (new ReflectionClass(Application::class))->getFileName() )));
+            if(defined("IN_UNIT_TESTS"))
+                define("PATH_APPLICATION", $path . DIRECTORY_SEPARATOR);
+            fwrite(STDOUT, "PATH_APPLICATION = " . PATH_APPLICATION . "\n");
+        }
+
+        require_once(PATH_APPLICATION . "src" . DIRECTORY_SEPARATOR . "core" . DIRECTORY_SEPARATOR . "Constants.php");
 
         $this->LoadManifest();
 
@@ -314,12 +321,24 @@ class Application
             $this->DropApplication(Application::RESPONSE_ERROR_NO_MANIFEST);
 
         $manifest = require $manifestPath;
-        $manifest['name'] = array_key_exists('name', $manifest) ? $manifest['name'] : "My Afoslt application";
         $manifest['routesDirectory'] = array_key_exists('routesDirectory', $manifest) ? $manifest['routesDirectory'] : "config" . DIRECTORY_SEPARATOR . "routes" . DIRECTORY_SEPARATOR;
         $manifest['readGetPost'] = array_key_exists('readGetPost', $manifest) ? $manifest['readGetPost'] : true;
         $manifest['controllersDirectory'] = array_key_exists('controllersDirectory', $manifest) ? $manifest['controllersDirectory'] : "controllers" . DIRECTORY_SEPARATOR;
         $manifest['controllersKeyword'] = array_key_exists('controllersKeyword', $manifest) ? $manifest['controllersKeyword'] : "Controller";
+        $manifest['actionsKeyword'] = array_key_exists('actionsKeyword', $manifest) ? $manifest['actionsKeyword'] : "Action";
+        $manifest['build'] = array_key_exists('build', $manifest) ? $manifest['build'] : BUILD_DEBUG;
         Application::SetManifest($manifest);
+
+        // Apply manifest values.
+        error_reporting(E_ALL);
+        switch(Application::$manifest['build']) {
+            case BUILD_RELEASE:
+                ini_set("display_errors", 0);
+                break;
+            default: 
+                ini_set("display_errors", 1);
+                break;
+        }
     }
 
     /**
