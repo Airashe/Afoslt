@@ -70,9 +70,12 @@ class Application
      * By default value for array stored in **\config\manifest.php**.
      * 
      * Default keys:
-     * + `name` - Application name.
-     * + `routes_directory` - Relative path to directory with routes files.
-     * 
+     * + `routesDirectory` - Relative path to directory with routes files.
+     * + `readGetPost` - Add keys and values from arrays $_GET and $_POST.
+     * + `addKeywords` - Tells application to add keywords to controllers and actions name, when search for them.
+     * + `controllersKeyword` - Keyword for Controllers.
+     * + `actionsKeyword` - Keyword for Actions.
+     * + `build` - Defines work mode that application will use.
      * @var array
      */
     private static $manifest = [];
@@ -118,8 +121,12 @@ class Application
      * By default value for array stored in **\config\manifest.php**.
      * 
      * Default keys:
-     * + `name` - Application name.
-     * + `routes_directory` - Relative path to directory with routes files.
+     * + `routesDirectory` - Relative path to directory with routes files.
+     * + `readGetPost` - Add keys and values from arrays $_GET and $_POST.
+     * + `addKeywords` - Tells application to add keywords to controllers and actions name, when search for them.
+     * + `controllersKeyword` - Keyword for Controllers.
+     * + `actionsKeyword` - Keyword for Actions.
+     * + `build` - Defines work mode that application will use.
      * 
      * @param array     $manifest   New array of application's parameters.
      * 
@@ -137,8 +144,12 @@ class Application
      * By default value for array stored in **\config\manifest.php**.
      * 
      * Default keys:
-     * + `name` - Application name.
-     * + `routes_directory` - Relative path to directory with routes files.
+     * + `routesDirectory` - Relative path to directory with routes files.
+     * + `readGetPost` - Add keys and values from arrays $_GET and $_POST.
+     * + `addKeywords` - Tells application to add keywords to controllers and actions name, when search for them.
+     * + `controllersKeyword` - Keyword for Controllers.
+     * + `actionsKeyword` - Keyword for Actions.
+     * + `build` - Defines work mode that application will use.
      * 
      * @return array
      * Returns current array of application parameters.
@@ -263,9 +274,11 @@ class Application
      * 
      * In first place constructor will define constants: 
      * + `PATH_APPLICATION` - path to application directory.
+     * And load other constants defined in file Constants.php
      * 
      * Then constructor will call instance's methods in order:
      * + `LoadManifest()`
+     * + `SetRouter()`
      * + `OnReady()`
      * + `Main()`
      * 
@@ -323,7 +336,7 @@ class Application
         $manifest = require $manifestPath;
         $manifest['routesDirectory'] = array_key_exists('routesDirectory', $manifest) ? $manifest['routesDirectory'] : "config" . DIRECTORY_SEPARATOR . "routes" . DIRECTORY_SEPARATOR;
         $manifest['readGetPost'] = array_key_exists('readGetPost', $manifest) ? $manifest['readGetPost'] : true;
-        $manifest['controllersDirectory'] = array_key_exists('controllersDirectory', $manifest) ? $manifest['controllersDirectory'] : "controllers" . DIRECTORY_SEPARATOR;
+        $manifest['addKeywords'] = array_key_exists('addKeywords', $manifest) ? $manifest['addKeywords'] : true;
         $manifest['controllersKeyword'] = array_key_exists('controllersKeyword', $manifest) ? $manifest['controllersKeyword'] : "Controller";
         $manifest['actionsKeyword'] = array_key_exists('actionsKeyword', $manifest) ? $manifest['actionsKeyword'] : "Action";
         $manifest['build'] = array_key_exists('build', $manifest) ? $manifest['build'] : BUILD_DEBUG;
@@ -387,6 +400,9 @@ class Application
      * Path to configuration file must be relative to configurations directory.
      * 
      * @param string    $relativeCfgPath        Relative path to configuration file.
+     * 
+     * @return bool
+     * Returns **true** if configuration from file loaded successfully.
      */
     public final function LoadConfiguration (string $relativeCfgPath): bool
     {
@@ -397,7 +413,7 @@ class Application
             $configData = require $cfgPath;
             if(is_array($configData)) {
                 Application::AddConfiguration($configData);
-                return false;
+                return true;
             }
         }
         return false;
@@ -416,12 +432,18 @@ class Application
     /**
      * This method executes before `Main`.
      * 
+     * This is method where you can set up environment, 
+     * before application will create controller and call action.
+     * 
      * @return void
      */
     protected function OnReady (): void { }
 
     /**
      * Entry point of Application.
+     * 
+     * It will call method to read user's request and create 
+     * controller.
      * 
      * @author Artem Khitsenko <eblludu247@gmail.com>
      * 
