@@ -36,4 +36,8 @@ return [
      * Keyword for controllers.
      */
     'controllersKeyword' => 'Controller', 
+    /**
+     * Keyword for actions.
+     */
+    'actionsKeyword' => 'Action', 
 ];

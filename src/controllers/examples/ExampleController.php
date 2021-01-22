@@ -11,5 +11,13 @@ use Afoslt\Core\Controller;
  */
 final class ExampleController extends Controller
 {
-    
+    /**
+     * Example of controller's action.
+     * 
+     * @return void
+     */
+    public function ExampleAction (): void
+    {
+
+    }
 }

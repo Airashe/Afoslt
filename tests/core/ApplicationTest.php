@@ -36,15 +36,17 @@ final class ApplicationTest extends TestCase
      */
     public function testApplicationInitialization (): Application
     {
-        /**
-         **Afoslt test** constant.
-         * 
-         * Contains path to the directory of all applications folder relative to 
-         * ApplicationTest.php.
-         * 
-         * @var string
-         */
-        define("TESTS_PATH_APPLICATION", dirname(dirname(__DIR__)) . DIRECTORY_SEPARATOR);
+        if(!defined("TESTS_PATH_APPLICATION")) {
+            /**
+             **Afoslt test** constant.
+             * 
+             * Contains path to the directory of all applications folder relative to 
+             * ApplicationTest.php.
+             * 
+             * @var string
+             */
+            define("TESTS_PATH_APPLICATION", dirname(dirname(__DIR__)) . DIRECTORY_SEPARATOR);
+        }
 
         $application = new Application();
 

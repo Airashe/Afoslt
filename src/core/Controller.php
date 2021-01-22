@@ -2,6 +2,8 @@
 
 namespace Afoslt\Core;
 
+use ReflectionMethod;
+
 /**
  * Base class for all controllers in application.
  * 
@@ -9,8 +11,10 @@ namespace Afoslt\Core;
  */
 abstract class Controller
 {
+    // Methods ---------------------------------------------
+
     /**
-     * Gets a short version of class (default from routes cfg files) and 
+     * Gets a short version of class and 
      * returns full name based on current manifest settings.
      * 
      * Controller keyword and keyword using can be change in application's 
@@ -34,7 +38,7 @@ abstract class Controller
      * @return string 
      * Returns full name of a class.
      */
-    public static function ClassName (string $controllerShortClassName): string
+    public static final function ClassName (string $controllerShortClassName): string
     {
         $controllerShortClassName = str_replace('/', '\\', $controllerShortClassName);
         $controllerShortClassName = trim($controllerShortClassName, '\\');
@@ -58,7 +62,7 @@ abstract class Controller
      * @return bool
      * Returns **true** if controller exists.
      */
-    public static function Exists (string $controllerName): bool
+    public static final function Exists (string $controllerName): bool
     {
         if(substr($controllerName, 0, 6) != "Afoslt")
             $controllerName = Controller::ClassName($controllerName, Application::GetManifest()['addKeywords'], Application::GetManifest()['controllersKeyword']);
@@ -77,5 +81,78 @@ abstract class Controller
         }
         
         return false;
+    }
+
+    /**
+     * Checks if controller have method with specific name.
+     * 
+     * @return bool
+     * Returns **true** if controller have method.
+     */
+    public final function MethodExists (string $methodName): bool
+    {
+        return method_exists($this, $methodName);
+    }
+
+    /**
+     * Checks if controller have action with specific name.
+     * 
+     * Difference between this method and `MethodExists` that this method 
+     * will add keywords if manifest told so, also action could be only 
+     * `public`.
+     * 
+     * @return bool
+     * Returns **true** if controller have action.
+     */
+    public final function ActionExists (string $actionName): bool
+    {
+        $actionFullName = Controller::ActionName($actionName);
+
+        if(method_exists($this, $actionFullName)) {
+            $reflectionOfAction = new ReflectionMethod($this, $actionFullName);
+            return $reflectionOfAction->isPublic();
+        }
+        return false;
+    }
+
+    /**
+     * Gets a short version of action of controller and 
+     * returns full name based on current manifest settings.
+     * 
+     * Action's keyword and keyword using can be change in application's 
+     * manifest.
+     * 
+     * @param string    $actionShortName       Short action's name.
+     * 
+     * Examples:
+     * + With keyword for actions: *Action*
+     * 
+     * **Input**: `Example`
+     * 
+     * **Output**: `ExampleAction`
+     * 
+     * + With keyword for controllers: *Handler*
+     * 
+     * **Input**: `OnRegister`
+     * 
+     * **Output**: `OnRegisterHandler`
+     * 
+     * @return string 
+     * Returns full name of an action.
+     */
+    public static final function ActionName (string $actionShortName): string
+    {
+        if(Application::GetManifest()['addKeywords']) {
+            
+            $actionsKeyword = Application::GetManifest()['actionsKeyword'];
+            $shortnameLength = strlen($actionShortName);
+            $keywordLength = strlen($actionsKeyword);
+
+            if($shortnameLength < $keywordLength || substr($actionShortName, $shortnameLength - $keywordLength, $keywordLength) !== $actionsKeyword)
+                $actionShortName .= $actionsKeyword;
+
+        }
+
+        return $actionShortName;
     }
 }

@@ -53,6 +53,13 @@ class Application
      * @var int
      */
     public const RESPONSE_ERROR_CONTROLLER_DOESNT_EXISTS = -2;
+    /**
+     * Error code: requested controller does not have requested 
+     * action.
+     * 
+     * @var int
+     */
+    public const RESPONSE_ERROR_ACTION_DOEST_EXISTS = -3;
     // Fields ------------------------------------------
 
     /**
@@ -95,6 +102,12 @@ class Application
      * @var array
      */
     private static $configuration = [];
+    /**
+     * Client's request to application.
+     * 
+     * @var string
+     */
+    private static $requestURI = "/";
     // Properties --------------------------------------
 
     /**
@@ -222,6 +235,26 @@ class Application
         return Application::$configuration;
     }
 
+    /**
+     * Client's request to application.
+     * 
+     * @param string        $requestURI         New property's value.
+     */
+    private static function SetRequestURI (string $requestURI): void
+    {
+        Application::$requestURI = $requestURI;
+    }
+
+    /**
+     * Client's request to application.
+     * 
+     * @return string
+     */
+    public static final function GetRequestURI (): string 
+    {
+        return Application::$requestURI;
+    }
+
     // Methods -----------------------------------------
 
     /**
@@ -259,8 +292,10 @@ class Application
 
         $this->SetRouter(new Router($this->LoadRoutes()));
 
-        $reuqestURI = is_array($_SERVER) && array_key_exists('REQUEST_URI', $_SERVER) ? $_SERVER['REQUEST_URI'] : '/';
-        $this->GetRouter()->ReadRequest($reuqestURI);
+        if(is_array($_SERVER) && array_key_exists('REQUEST_URI', $_SERVER))
+            Application::SetRequestURI($_SERVER['REQUEST_URI']);
+        else
+            Application::SetRequestURI('/');
 
         $this->Main();
     }
@@ -375,14 +410,26 @@ class Application
      */
     private function Main (): void
     {
+        $this->GetRouter()->ReadRequest(Application::GetRequestURI());
+
         $controllerName = $this->router->GetControllerName();
+        $actionName = Controller::ActionName($this->router->GetActionName());
         if(!empty($controllerName)) {
             $controllerFullName = Controller::ClassName($controllerName);
             if(Controller::Exists($controllerFullName)) {
+                /**
+                 * @var Controller
+                 */
                 $controller = new $controllerFullName;
+                if($controller->ActionExists($actionName)) {
+                    $controller->$actionName();
+                    return;
+                }
+
+                $this->DropApplication(Application::RESPONSE_ERROR_ACTION_DOEST_EXISTS, "Controller(" . $controllerName . ") doesn't have action with name " . $actionName . ".");
             }
         }
 
-        $this->DropApplication(Application::RESPONSE_ERROR_CONTROLLER_DOESNT_EXISTS, "Controller doesn't exists");
+        $this->DropApplication(Application::RESPONSE_ERROR_CONTROLLER_DOESNT_EXISTS, "Controller(" . $controllerName . ") doesn't exists");
     }
 }
