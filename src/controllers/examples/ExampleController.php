@@ -16,6 +16,7 @@
 namespace Afoslt\Controllers\Examples;
 
 use Afoslt\Core\Controller;
+use Afoslt\Core\View;
 
 /**
  * Example of controller.
@@ -29,8 +30,8 @@ final class ExampleController extends Controller
      * 
      * @return void
      */
-    public function ExampleAction (): void
+    public function ExampleAction (): View
     {
-
+        return new View("example/index", ["Hello world!"]);
     }
 }

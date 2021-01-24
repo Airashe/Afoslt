@@ -332,11 +332,8 @@ class Application
          */
         if(!defined("PATH_APPLICATION")) {
             $path = dirname(dirname(dirname( (new ReflectionClass(Application::class))->getFileName() )));
-            if(defined("IN_UNIT_TESTS"))
-                define("PATH_APPLICATION", $path . DIRECTORY_SEPARATOR);
-            fwrite(STDOUT, "PATH_APPLICATION = " . PATH_APPLICATION . "\n");
+            define("PATH_APPLICATION", $path . DIRECTORY_SEPARATOR);
         }
-
         require_once(PATH_APPLICATION . "src" . DIRECTORY_SEPARATOR . "core" . DIRECTORY_SEPARATOR . "Constants.php");
 
         $this->LoadManifest();
@@ -468,6 +465,8 @@ class Application
      */
     protected function DropApplication (int $code, string $message = "Internal error"): void
     {
+        if($code > 0)
+            http_response_code($code);
         exit("Afoslt application has stopped working. Code: " . $code . " " . $message);
     }
 
@@ -480,6 +479,29 @@ class Application
      * @return void
      */
     protected function OnReady (): void { }
+
+    /**
+     * This method will get result of controller's action 
+     * method and show it to the client.
+     * 
+     * If action returns instance of View, this method will 
+     * echo layout and view.
+     * 
+     * If action return array, application will encode it as 
+     * JSON and return to the client.
+     * 
+     * @param mixed     $result         Result of action's work.
+     * 
+     * @return void
+     */
+    protected function Response ($result): void
+    {
+        if(gettype($result) === "object" && is_subclass_of($result, "Afoslt\Core\View")) {
+            $result->Render();
+            return;
+        }
+        echo json_encode($result);
+    }
 
     /**
      * Entry point of Application.
@@ -503,8 +525,7 @@ class Application
                 $actionName = Controller::ActionName($this->GetRouter()->GetActionName());
 
                 if($controller->ActionExists($actionName)) {
-                    $controller->$actionName();
-                    fwrite(STDOUT, $this->GetRouter()->GetLayoutName());
+                    $this->Response($controller->$actionName());
                     return;
                 }
                 $this->DropApplication(Application::RESPONSE_ERROR_ACTION_DOEST_EXISTS, "Controller(" . $this->GetRouter()->GetControllerName() . ") doesn't have action with name " . $actionName . ".");

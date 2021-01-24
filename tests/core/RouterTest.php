@@ -178,14 +178,14 @@ final class RouterTest extends TestCase
                 'methodResult' => true, 
                 'controller' => 'Index', 
                 'action' => 'IndexA', 
-                'layout' => 'main', 
+                'layout' => array_key_exists("defaultLayout", Application::GetManifest()) ? Application::GetManifest()['defaultLayout'] : null, 
             ], 
             '/test/{testvar}' => [
                 'requestURI' => '/test/5', 
                 'methodResult' => true, 
                 'controller' => 'Test', 
                 'action' => 'TestA', 
-                'layout' => 'main', 
+                'layout' => array_key_exists("defaultLayout", Application::GetManifest()) ? Application::GetManifest()['defaultLayout'] : null, 
             ], 
             '/without/controller' => [
                 'requestURI' => '/without/controller', 
@@ -206,21 +206,21 @@ final class RouterTest extends TestCase
                 'methodResult' => true, 
                 'controller' => 'wlC', 
                 'action' => 'wlA', 
-                'layout' => 'main', 
+                'layout' => array_key_exists("defaultLayout", Application::GetManifest()) ? Application::GetManifest()['defaultLayout'] : null, 
             ], 
             'nodata' => [
                 'requestURI' => 'nodata', 
                 'methodResult' => true, 
                 'controller' => null, 
                 'action' => null, 
-                'layout' => 'main', 
+                'layout' => array_key_exists("defaultLayout", Application::GetManifest()) ? Application::GetManifest()['defaultLayout'] : null, 
             ], 
             'differentTypes'=> [
                 'requestURI' => 'differentTypes', 
                 'methodResult' => true, 
                 'controller' => null, 
                 'action' => null, 
-                'layout' => 'main', 
+                'layout' => array_key_exists("defaultLayout", Application::GetManifest()) ? Application::GetManifest()['defaultLayout'] : null, 
             ], 
         ];
         $router = new Router($routes);

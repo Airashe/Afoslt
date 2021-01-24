@@ -68,5 +68,5 @@ return [
      * 
      * @var string
      */
-    'defaultLayout' => 'main', 
+    'defaultLayout' => null, 
 ];
