@@ -6,11 +6,13 @@
  * File returns array of routes.
  * 
  * Each route represented as: 
- * '%request%' => ['controller' => '%controller_name%', 'action' => '%action_name%'], 
+ * '%request%' => ['controller' => '%controller_name%', 'action' => '%action_name%', 'layout' => '%layout_name%'], 
+ * 
  * where: 
  * %request% - request address.
  * %controller_name% - Name of the controller class, that will be created.
  * %action_name% - Name of the action of controller, that will be called.
+ * %layout_name% - Name of layout file, that will be used for view render.
  *
  * @see       https://github.com/IIpocToTo4Ka/Afoslt - Afoslt GitHub repository.
  *
@@ -23,5 +25,7 @@
  * or do anything at all.
  */
 return [
-    '/' => ['controller' => 'Examples\Example', 'action' => 'Example'], 
+    '/' => ['controller' => 'Examples\Example',  
+            'action' => 'Example', 
+            'layout' => 'example\exampleLayout'], 
 ];

@@ -59,9 +59,9 @@ final class RouterTest extends TestCase
      * @author Artem Khitsenko <eblludu247@gmail.com>
      * @test
      * 
-     * @return array
+     * @return void
      */
-    public function testFormattingRoutesArray (): array
+    public function testFormattingRoutesArray (): void
     {
         $routes = [
             '/index' => ['controller' => 'index', 'action' => 'index'], 
@@ -75,8 +75,6 @@ final class RouterTest extends TestCase
         $this->assertFalse($router->ReadRequest('/test'), "Found route with arguments, when there is request without one.");
         $this->assertTrue($router->ReadRequest('/test/1'), "Could not find route with arguments, when there is one.");
         $this->assertTrue($router->ReadRequest('/test/1?abcd=6'), "Could not find route with arguments, when there is one and request contains GET.");
-
-        return $routes;
     }
 
     /**
@@ -160,19 +158,105 @@ final class RouterTest extends TestCase
      * 
      * @author Artem Khitsenko <eblludu247@gmail.com>
      * @test
-     * @depends testFormattingRoutesArray
-     * 
-     * @param array     $routes     Associative massive of routes.
      * 
      * @return void
      */
-    public function testControllerRead (array $routes): void
+    public function testControllerRead (): void
     {
+        $routes = [
+            '/index' => ['controller' => 'Index', 'action' => 'IndexA'], 
+            '/test/{testvar}' => ['controller' => 'Test', 'action' => 'TestA'], 
+            '/without/controller' => ['action' => 'wcA', 'layout' => 'wcL'], 
+            '/without/action' => ['controller' => 'waC', 'layout' => 'waL'], 
+            '/without/layout' => ['controller' => 'wlC', 'action' => 'wlA'], 
+            'nodata' => [], 
+            'differentTypes' => ['controller' => 1, 'action' => false, 'layout' => null], 
+        ];
+        $routesResults = [
+            '/index' => [
+                'requestURI' => '/index', 
+                'methodResult' => true, 
+                'controller' => 'Index', 
+                'action' => 'IndexA', 
+                'layout' => 'main', 
+            ], 
+            '/test/{testvar}' => [
+                'requestURI' => '/test/5', 
+                'methodResult' => true, 
+                'controller' => 'Test', 
+                'action' => 'TestA', 
+                'layout' => 'main', 
+            ], 
+            '/without/controller' => [
+                'requestURI' => '/without/controller', 
+                'methodResult' => true, 
+                'controller' => null, 
+                'action' => 'wcA', 
+                'layout' => 'wcL', 
+            ], 
+            '/without/action' => [
+                'requestURI' => '/without/action', 
+                'methodResult' => true, 
+                'controller' => 'waC', 
+                'action' => null, 
+                'layout' => 'waL', 
+            ], 
+            '/without/layout' => [
+                'requestURI' => '/without/layout', 
+                'methodResult' => true, 
+                'controller' => 'wlC', 
+                'action' => 'wlA', 
+                'layout' => 'main', 
+            ], 
+            'nodata' => [
+                'requestURI' => 'nodata', 
+                'methodResult' => true, 
+                'controller' => null, 
+                'action' => null, 
+                'layout' => 'main', 
+            ], 
+            'differentTypes'=> [
+                'requestURI' => 'differentTypes', 
+                'methodResult' => true, 
+                'controller' => null, 
+                'action' => null, 
+                'layout' => 'main', 
+            ], 
+        ];
         $router = new Router($routes);
 
-        $router->ReadRequest('/index');
-        $this->assertSame($routes['/index']['controller'], $router->GetControllerName(), "Controller for test route has been read wrong.");
-        $router->ReadRequest('/test/5');
-        $this->assertSame($routes['/test/{testvar}']['controller'], $router->GetControllerName(), "Controller for test route has been read wrong.");
+        fwrite(STDOUT, "testControllerRead\n");
+
+        foreach ($routes as $route => $rp) {
+            fwrite(STDOUT, "\t" . $route . ":\n");
+            $routeResult = $routesResults[$route];
+            $actualMethodResult = $router->ReadRequest($routeResult['requestURI']);
+
+            fwrite(STDOUT,  "\t\t Request URI: " . $routeResult['requestURI'] . "\n\t\t\tExpected result: " . ($routeResult['methodResult'] ? "true" : "false") . 
+                            "\n\t\t\tActual   result: " . ($actualMethodResult ? "true" : "false") . "\n\n");
+
+            $this->assertSame(  $routeResult['methodResult'], $actualMethodResult, 
+                                "\t" . $route . ": Request URI: " . $routeResult['requestURI'] . " ; expected request read result: " . ($routeResult['methodResult'] ? "true" : "false") . 
+                                "; actual request read result: " . ($actualMethodResult ? "true" : "false") . "\n");
+                        
+            fwrite(STDOUT,  "\t\t\tExpected controller name: " . print_r($routeResult['controller'], true) . "\n");
+            fwrite(STDOUT,  "\t\t\tActual   controller name: " . print_r($router->GetControllerName(), true) . "\n\n");
+
+            $this->assertSame(  $routeResult['controller'], $router->GetControllerName(), 
+                                "\t\t" . "Expected controller: " . $routeResult['controller'] . "; Actual controller: " . $router->GetControllerName() . "\n");
+
+            fwrite(STDOUT,  "\t\t\tExpected action name: " . print_r($routeResult['action'], true) . "\n");
+            fwrite(STDOUT,  "\t\t\tActual   action name: " . print_r($router->GetActionName(), true) . "\n\n");
+
+            $this->assertSame(  $routeResult['action'], $router->GetActionName(), 
+                                "\t\t" . "Expected action: " . $routeResult['action'] . "; Actual action: " . $router->GetActionName() . "\n");
+
+            fwrite(STDOUT,  "\t\t\tExpected action name: " . print_r($routeResult['layout'], true) . "\n");
+            fwrite(STDOUT,  "\t\t\tActual   action name: " . print_r($router->GetLayoutName(), true) . "\n\n");
+
+            $this->assertSame(  $routeResult['layout'], $router->GetLayoutName(), 
+                                "\t\t" . "Expected layout: " . $routeResult['layout'] . "; Actual layout: " . $router->GetLayoutName() . "\n");
+
+        }
     }
 }

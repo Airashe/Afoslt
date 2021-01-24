@@ -47,13 +47,10 @@ final class ControllerTest extends TestCase
         $applicationTestControllerTarget = $tmpControllerDirectory . "TestController.php";
         $applicationTestControllerOrigin = TEST_PATH_APPLICATION . "tests" . DIRECTORY_SEPARATOR . "src" . DIRECTORY_SEPARATOR . "TestController.php";
 
-        if(file_exists($applicationTestControllerTarget)) {
-            unlink($applicationTestControllerTarget);
-            rmdir($tmpControllerDirectory);
+        if(!file_exists($applicationTestControllerTarget)) {
+            mkdir($tmpControllerDirectory);
+            copy($applicationTestControllerOrigin, $applicationTestControllerTarget);
         }
-
-        mkdir($tmpControllerDirectory);
-        copy($applicationTestControllerOrigin, $applicationTestControllerTarget);
 
         ControllerTest::$appInstance = new Application;
     }
@@ -67,8 +64,10 @@ final class ControllerTest extends TestCase
         $tmpControllerDirectory = TEST_PATH_APPLICATION . "src" . DIRECTORY_SEPARATOR . "controllers" . DIRECTORY_SEPARATOR . "tests" . DIRECTORY_SEPARATOR;
         $applicationTestControllerTarget = $tmpControllerDirectory . "TestController.php";
 
-        unlink($applicationTestControllerTarget);
-        rmdir($tmpControllerDirectory);
+        if(file_exists($applicationTestControllerTarget)) {
+            unlink($applicationTestControllerTarget);
+            rmdir($tmpControllerDirectory);
+        }
 
         ControllerTest::$appInstance = null;
     }
@@ -93,6 +92,7 @@ final class ControllerTest extends TestCase
             'Users/Settings', 
             '/Users/Settings', 
             '/Users/Settings/', 
+            'Users\\SettingsController', 
         ];
 
         fwrite(STDOUT, "\ntestControllerClassName:\n");
@@ -116,8 +116,35 @@ final class ControllerTest extends TestCase
      */
     public function testControllerExists (): void
     {
-        $this->assertTrue(Controller::Exists("Afoslt\Controllers\Tests\TestController"), "Can not find TestController with method `Exists`.");
-        $this->assertTrue(Controller::Exists("Tests\TestController"), "Can not find TestController with method `Exists`.");
+        $controllersTests = [
+            "Afoslt\Controllers\Tests\TestController" => true, 
+            "Tests\TestController" => true, 
+            "\Afoslt\Controllers\Tests\TestController\\" => true, 
+            "\\Tests\TestController\\" => true, 
+            "Afoslt/Controllers/Tests/TestController" => true, 
+            "Tests/TestController" => true, 
+            "/Afoslt/Controllers/Tests/TestController/" => true, 
+            "/Tests/TestController/" => true, 
+            "Afoslt\Controllers\Tests\TestControllerController" => false, 
+            "Example\ExampleControllerController" => false, 
+            "src\Controllers\Tests\TestController" => true, 
+            null => false, 
+
+        ];
+
+        fwrite(STDOUT, "testMethodExists:\n");
+
+        foreach ($controllersTests as $controllerName => $expected) {
+            $actual = Controller::Exists($controllerName);
+
+            fwrite(STDOUT, "\t" . $controllerName . ":\n");
+            fwrite(STDOUT, "\t\t Expected result: " . ($expected ? "true" : "false") . "\n");
+            fwrite(STDOUT, "\t\t Actual   result: " . ($actual ? "true" : "false") . "\n");
+
+            $this->assertSame(  $expected, $actual, 
+                                "Controller::Exists has been returned result different than expexted. Controller name: " . $controllerName . 
+                                "; expected: ". ($expected ? "true" : "false") . "; actual: " . ($actual ? "true": "false"));
+        }
     }
 
     /**
@@ -137,6 +164,7 @@ final class ControllerTest extends TestCase
             "HiddenMethod", 
             "NEM", 
             "NEM2", 
+            null, 
         ];
 
         fwrite(STDOUT, "testMethodExists:\n");
@@ -165,6 +193,7 @@ final class ControllerTest extends TestCase
             "HiddenMethod" => false, 
             "NEA" => false, 
             "NEA2" => false, 
+            null => false, 
         ];
 
         $controller = new TestController;
@@ -194,6 +223,7 @@ final class ControllerTest extends TestCase
             "Test" => "TestAction", 
             "ExampleAction" => "ExampleAction", 
             "Example" => "ExampleAction", 
+            null => null, 
         ];
 
         fwrite(STDOUT, "testActionName:\n");

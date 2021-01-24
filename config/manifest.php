@@ -61,4 +61,12 @@ return [
      * @var bool
      */ 
     'startupSession' => true, 
+    /**
+     * Default layout's name.
+     * 
+     * This layout's name will be used when route doesn't have layout parameter.
+     * 
+     * @var string
+     */
+    'defaultLayout' => 'main', 
 ];

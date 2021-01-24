@@ -33,7 +33,7 @@ abstract class Controller
      * Controller keyword and keyword using can be change in application's 
      * manifest.
      * 
-     * @param string    $controllerShortClassName       Short class name (default from routes cfg files).
+     * @param null|string    $controllerShortClassName       Short class name (default from routes cfg files).
      * 
      * Examples:
      * + With keyword for controllers: *Controller*
@@ -48,63 +48,77 @@ abstract class Controller
      * 
      * **Output**: `Afoslt\Controllers\IndexTest`
      * 
-     * @return string 
+     * @return null|string 
      * Returns full name of a class.
+     * 
+     * For `null` will return `null`.
      */
-    public static final function ClassName (string $controllerShortClassName): string
+    public static final function ClassName (?string $controllerShortClassName): string
     {
-        $controllerShortClassName = str_replace('/', '\\', $controllerShortClassName);
-        $controllerShortClassName = trim($controllerShortClassName, '\\');
-
-        $lastDirectorySeparatorIndex = strripos($controllerShortClassName, '\\');
-        if(!is_bool($lastDirectorySeparatorIndex)) {
-            $controllersNamespace = substr($controllerShortClassName, 0, $lastDirectorySeparatorIndex);
-            $controllerName = substr($controllerShortClassName, $lastDirectorySeparatorIndex + 1);
+        if(!empty($controllerShortClassName)) {
+            $controllerShortClassName = str_replace('/', '\\', $controllerShortClassName);
+            $controllerShortClassName = trim($controllerShortClassName, '\\');
+            
+            $lastDirectorySeparatorIndex = strripos($controllerShortClassName, '\\');
+            if(!is_bool($lastDirectorySeparatorIndex)) {
+                $controllersNamespace = substr($controllerShortClassName, 0, $lastDirectorySeparatorIndex);
+                $controllerName = substr($controllerShortClassName, $lastDirectorySeparatorIndex + 1);
+            }
+        
+            $controllerFullName = "Afoslt\\Controllers\\" . $controllersNamespace . '\\' . $controllerName;
+            if(Application::GetManifest()['addKeywords'] && preg_match("/" . Application::GetManifest()['controllersKeyword'] . '$/', $controllerFullName) === 0)
+                $controllerFullName .= Application::GetManifest()['controllersKeyword'];
         }
-
-        $controllerFullName = "Afoslt\\Controllers\\" . $controllersNamespace . '\\' . $controllerName;
-        if(Application::GetManifest()['addKeywords'])
-            $controllerFullName .= Application::GetManifest()['controllersKeyword'];
-
         return $controllerFullName;
     }
 
     /**
      * Check if controller exists.
      * 
+     * @param ?string   $controllerName     Name of controller.
+     * 
      * @return bool
      * Returns **true** if controller exists.
      */
-    public static final function Exists (string $controllerName): bool
+    public static final function Exists (?string $controllerName): bool
     {
-        if(substr($controllerName, 0, 6) != "Afoslt")
-            $controllerName = Controller::ClassName($controllerName, Application::GetManifest()['addKeywords'], Application::GetManifest()['controllersKeyword']);
+        if(!empty($controllerName)) {
+            $controllerName = str_replace('/', '\\', $controllerName);
+            $controllerName = trim($controllerName, '\\');
 
-        $controllerRelativePath = str_replace("Afoslt", "src", $controllerName);
-        $controllerAbsolutePath = PATH_APPLICATION . $controllerRelativePath . ".php";
+            if(preg_match("/^Afoslt/", $controllerName) !== 1 && preg_match("/^src/", $controllerName) !== 1)
+                $controllerName = Controller::ClassName($controllerName, Application::GetManifest()['addKeywords'], Application::GetManifest()['controllersKeyword']);
 
-        if(!file_exists($controllerAbsolutePath))
-            return true;
-        else {
-            $controllerNameDSlastpos = strripos($controllerRelativePath, "\\");
-            $controllerClassName = substr($controllerRelativePath, $controllerNameDSlastpos + 1);
-            $controllerNamespace = substr($controllerRelativePath, 0, $controllerNameDSlastpos + 1);
-            $controllerNamespace = mb_strtolower($controllerNamespace);
-            return file_exists(PATH_APPLICATION . $controllerNamespace . $controllerClassName . ".php");
+            $controllerRelativePath = str_replace("Afoslt", "src", $controllerName);
+            $controllerAbsolutePath = PATH_APPLICATION . $controllerRelativePath . ".php";
+            if(file_exists($controllerAbsolutePath))
+                return true;
+            else {
+                $controllerNameDSlastpos = strripos($controllerRelativePath, "\\");
+                $controllerClassName = substr($controllerRelativePath, $controllerNameDSlastpos + 1);
+                $controllerNamespace = substr($controllerRelativePath, 0, $controllerNameDSlastpos + 1);
+                $controllerNamespace = mb_strtolower($controllerNamespace);
+                return file_exists(PATH_APPLICATION . $controllerNamespace . $controllerClassName . ".php");
+            }
         }
-        
         return false;
     }
 
     /**
      * Checks if controller have method with specific name.
      * 
+     * @param null|string       Name of controller's method.
+     * 
      * @return bool
      * Returns **true** if controller have method.
+     * 
+     * For `null` will return `false`.
      */
-    public final function MethodExists (string $methodName): bool
+    public final function MethodExists (?string $methodName): bool
     {
-        return method_exists($this, $methodName);
+        if(!empty($methodName))
+            return method_exists($this, $methodName);
+        return false;
     }
 
     /**
@@ -114,16 +128,22 @@ abstract class Controller
      * will add keywords if manifest told so, also action could be only 
      * `public`.
      * 
+     * @param null|string   $actionName     Action's name.
+     * 
      * @return bool
      * Returns **true** if controller have action.
+     * 
+     * For `null` will always return `false`.
      */
-    public final function ActionExists (string $actionName): bool
+    public final function ActionExists (?string $actionName): bool
     {
-        $actionFullName = Controller::ActionName($actionName);
+        if(!empty($actionName)) {
+            $actionFullName = Controller::ActionName($actionName);
 
-        if(method_exists($this, $actionFullName)) {
-            $reflectionOfAction = new ReflectionMethod($this, $actionFullName);
-            return $reflectionOfAction->isPublic();
+            if(method_exists($this, $actionFullName)) {
+                $reflectionOfAction = new ReflectionMethod($this, $actionFullName);
+                return $reflectionOfAction->isPublic();
+            }
         }
         return false;
     }
@@ -135,7 +155,7 @@ abstract class Controller
      * Action's keyword and keyword using can be change in application's 
      * manifest.
      * 
-     * @param string    $actionShortName       Short action's name.
+     * @param null|string    $actionShortName       Short action's name.
      * 
      * Examples:
      * + With keyword for actions: *Action*
@@ -150,22 +170,26 @@ abstract class Controller
      * 
      * **Output**: `OnRegisterHandler`
      * 
-     * @return string 
+     * @return null|string 
      * Returns full name of an action.
+     * 
+     * For `null` will returns `null`.
      */
-    public static final function ActionName (string $actionShortName): string
+    public static final function ActionName (?string $actionShortName): ?string
     {
-        if(Application::GetManifest()['addKeywords']) {
-            
-            $actionsKeyword = Application::GetManifest()['actionsKeyword'];
-            $shortnameLength = strlen($actionShortName);
-            $keywordLength = strlen($actionsKeyword);
+        if(!empty($actionShortName)) {
+            if(Application::GetManifest()['addKeywords']) {
 
-            if($shortnameLength < $keywordLength || substr($actionShortName, $shortnameLength - $keywordLength, $keywordLength) !== $actionsKeyword)
-                $actionShortName .= $actionsKeyword;
+                $actionsKeyword = Application::GetManifest()['actionsKeyword'];
+                $shortnameLength = strlen($actionShortName);
+                $keywordLength = strlen($actionsKeyword);
 
+                if($shortnameLength < $keywordLength || substr($actionShortName, $shortnameLength - $keywordLength, $keywordLength) !== $actionsKeyword)
+                    $actionShortName .= $actionsKeyword;
+
+            }
+            return $actionShortName;
         }
-
-        return $actionShortName;
+        return null;
     }
 }

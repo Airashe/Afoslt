@@ -113,6 +113,12 @@ class Application
      * @var string
      */
     private static $requestURI = "/";
+    /**
+     * Name of layout's file that will be used for view render.
+     * 
+     * @var string
+     */
+    private static $layoutName = "";
     // Properties --------------------------------------
 
     /**
@@ -270,6 +276,28 @@ class Application
         return Application::$requestURI;
     }
 
+    /**
+     * Name of layout's file that will be used for view render.
+     * 
+     * @param null|string   $layoutName         New name of layout.
+     * 
+     * @return void
+     */
+    protected static final function SetLayout (?string $layoutName): void
+    {
+        Application::$layoutName = $layoutName;
+    }
+
+    /**
+     * Name of layout's file that will be used for view render.
+     * 
+     * @return string
+     */
+    public static final function GetLayout (): string
+    {
+        return Application::$layoutName;
+    }
+
     // Methods -----------------------------------------
 
     /**
@@ -313,9 +341,6 @@ class Application
 
         $this->LoadManifest();
 
-        if(Application::GetManifest()['startupSession'] && session_status() === PHP_SESSION_NONE && headers_sent() === false)
-            session_start();
-
         $this->SetRouter(new Router($this->LoadRoutes()));
 
         if(is_array($_SERVER) && array_key_exists('REQUEST_URI', $_SERVER))
@@ -323,6 +348,13 @@ class Application
         else
             Application::SetRequestURI('/');
 
+        if($this->GetRouter()->ReadRequest(Application::GetRequestURI())) {
+            Application::SetLayout($this->GetRouter()->GetLayoutName());
+        } else {
+            $this->DropApplication(404, "Not Found");
+        }
+
+        $this->OnReady();
         $this->Main();
     }
 
@@ -359,6 +391,9 @@ class Application
                 ini_set("display_errors", 1);
                 break;
         }
+
+        if(Application::GetManifest()['startupSession'] && session_status() === PHP_SESSION_NONE && headers_sent() === false)
+            session_start();
     }
 
     /**
@@ -457,27 +492,24 @@ class Application
      * @return void
      */
     private function Main (): void
-    {
-        $this->GetRouter()->ReadRequest(Application::GetRequestURI());
-
-        $controllerName = $this->router->GetControllerName();
-        $actionName = Controller::ActionName($this->router->GetActionName());
-        if(!empty($controllerName)) {
-            $controllerFullName = Controller::ClassName($controllerName);
+    {   
+        if(!empty($this->GetRouter()->GetControllerName())) {
+            $controllerFullName = Controller::ClassName($this->GetRouter()->GetControllerName());
             if(Controller::Exists($controllerFullName)) {
                 /**
                  * @var Controller
                  */
                 $controller = new $controllerFullName;
+                $actionName = Controller::ActionName($this->GetRouter()->GetActionName());
+
                 if($controller->ActionExists($actionName)) {
                     $controller->$actionName();
+                    fwrite(STDOUT, $this->GetRouter()->GetLayoutName());
                     return;
                 }
-
-                $this->DropApplication(Application::RESPONSE_ERROR_ACTION_DOEST_EXISTS, "Controller(" . $controllerName . ") doesn't have action with name " . $actionName . ".");
+                $this->DropApplication(Application::RESPONSE_ERROR_ACTION_DOEST_EXISTS, "Controller(" . $this->GetRouter()->GetControllerName() . ") doesn't have action with name " . $actionName . ".");
             }
         }
-
-        $this->DropApplication(Application::RESPONSE_ERROR_CONTROLLER_DOESNT_EXISTS, "Controller(" . $controllerName . ") doesn't exists");
+        $this->DropApplication(Application::RESPONSE_ERROR_CONTROLLER_DOESNT_EXISTS, "Controller(" . $this->GetRouter()->GetControllerName() . ") doesn't exists");
     }
 }

@@ -46,6 +46,12 @@ final class Router
      * @var string
      */
     private $actionName = "";
+    /**
+     * Name of layout's file that will be used for view render.
+     * 
+     * @var string
+     */
+    private $layoutName = "";
 
     // Properties ---------------------------------------------------
 
@@ -77,9 +83,9 @@ final class Router
     /**
      * Name of controller that this router requesting
      * 
-     * @return string
+     * @return null|string
      */
-    public function GetControllerName (): string
+    public function GetControllerName (): ?string
     {
         return $this->controllerName;
     }
@@ -87,11 +93,11 @@ final class Router
     /**
      * Name of controller that this router requesting
      * 
-     * @param string    $controllerName     Controller's name.
+     * @param null|string    $controllerName     Controller's name.
      * 
      * @return void
      */
-    private function SetControllerName (string $controllerName): void
+    private function SetControllerName (?string $controllerName): void
     {
         $this->controllerName = $controllerName;
     }
@@ -99,9 +105,9 @@ final class Router
     /**
      * Name of controller's action that this router requesting
      * 
-     * @return string
+     * @return null|string
      */
-    public function GetActionName (): string
+    public function GetActionName (): ?string
     {
         return $this->actionName;
     }
@@ -109,13 +115,35 @@ final class Router
     /**
      * Name of controller's action that this router requesting
      * 
-     * @param string    $actionName         Action's name.
+     * @param null|string    $actionName         Action's name.
      * 
      * @return void
      */
-    private function SetActionName (string $actionName): void
+    private function SetActionName (?string $actionName): void
     {
         $this->actionName = $actionName;
+    }
+
+    /**
+     * Name of layout's file that will be used for view render.
+     * 
+     * @return null|string
+     */
+    public function GetLayoutName (): ?string
+    {
+        return $this->layoutName;
+    }
+
+    /**
+     * Name of layout's file that will be used for view render.
+     * 
+     * @param null|string    $layoutName         New name of layout.
+     * 
+     * @return void
+     */
+    public function SetLayoutName (?string $layoutName): void
+    {
+        $this->layoutName = $layoutName;
     }
 
     // Methods ------------------------------------------------------
@@ -149,6 +177,21 @@ final class Router
             $formattedRoute = preg_replace('#\{(\w+)\}#', '(?P<${1}>\w+)', $formattedRoute);
             $formattedRoute = '#^' . $formattedRoute . "$#";
 
+            foreach($routeParams as $param => $value) {
+                if(is_string($param)) {
+                    switch($param) {
+                        case 'controller':
+                        case 'action':
+                        case 'layout': 
+                            if(!is_string($value) || empty($value))
+                                unset($routeParams[$param]);
+                            break;
+                    }
+                }
+                else
+                    unset($routeParams[$param]);
+            }
+
             $this->AddRoutes($formattedRoute, $routeParams);
         }
     }
@@ -156,15 +199,15 @@ final class Router
     /**
      * Read client's request to server.
      * 
-     * @param ?string        $requestURI         Request URI.
+     * @param null|string        $requestURI         Request URI.
      * 
      * @return bool
      * Returns `true` if requests matches with any of router's routes.
      */
-    public final function ReadRequest (?string $requesURI): bool
+    public final function ReadRequest (?string $requestURI): bool
     {
-        if($requesURI != null) {
-            $requestRoute = trim($requesURI, '/');
+        if($requestURI != null) {
+            $requestRoute = trim($requestURI, '/');
             $requestRoute = explode('?', $requestRoute)[0];
             
             if(Application::GetManifest()['readGetPost'])
@@ -172,11 +215,26 @@ final class Router
                 Application::GetArguments()[$requestArgKey] = $requestArgValue;
             
             foreach($this->GetRoutes() as $route => $routeParams) {
-                if( preg_match($route, $requestRoute, $routeMatches) && is_array($routeParams) &&
-                    array_key_exists('controller', $routeParams) && array_key_exists('action', $routeParams) ) {
+                if( preg_match($route, $requestRoute, $routeMatches) && is_array($routeParams) ) {
                     
-                        $this->SetControllerName($routeParams['controller']);
-                        $this->SetActionName($routeParams['action']);
+                        // Controller
+                        if(array_key_exists('controller', $routeParams))
+                            $this->SetControllerName($routeParams['controller']);
+                        else
+                            $this->SetControllerName(null);
+                        // Action
+                        if(array_key_exists('action', $routeParams))
+                            $this->SetActionName($routeParams['action']);
+                        else
+                            $this->SetActionName(null);
+                        // Layout
+                        if(array_key_exists('layout', $routeParams))
+                            $this->SetLayoutName($routeParams['layout']);
+                        elseif(array_key_exists('defaultLayout', Application::GetManifest()))
+                            $this->SetLayoutName(Application::GetManifest()['defaultLayout']);
+                        else
+                            $this->SetLayoutName(null);
+                        // ---------
                         return true;
                     
                         foreach($routeMatches as $matchKey => $matchValue) {
