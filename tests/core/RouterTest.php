@@ -1,5 +1,18 @@
 <?php
-
+/**
+ * RouterTest.php - stores all tests for class Afoslt\Core\Router.
+ * PHP Version 7.3.
+ *
+ * @see       https://github.com/IIpocToTo4Ka/Afoslt - Afoslt GitHub repository.
+ *
+ * @author    Artem Khitsenko <eblludu247@gmail.com>
+ * @copyright Copyright (c) 2020 IIpocTo_To4Ka.
+ * @license   MIT License.
+ * @package   Afoslt Core UnitTests
+ * @note      This code is distributed in the hope that it can help someone. 
+ * The author does not guarantee that this code can somehow work and be useful 
+ * or do anything at all.
+ */
 namespace Afoslt\Tests\Core;
 
 use Afoslt\Core\Application;
@@ -140,7 +153,6 @@ final class RouterTest extends TestCase
         $this->assertTrue($router->ReadRequest('/test/1'), "BS: Could not find route with arguments, when there is one.");
         $this->assertTrue($router->ReadRequest('/test/1?abcd=6'), "BS: Could not find route with arguments, when there is one and request contains GET.");
     }
-
 
     /**
      * Checking that router is correctly reading route 

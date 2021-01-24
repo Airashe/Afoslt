@@ -1,5 +1,18 @@
 <?php
-
+/**
+ * ControllerTest.php - stores all tests for class Afoslt\Core\Controller.
+ * PHP Version 7.3.
+ *
+ * @see       https://github.com/IIpocToTo4Ka/Afoslt - Afoslt GitHub repository.
+ *
+ * @author    Artem Khitsenko <eblludu247@gmail.com>
+ * @copyright Copyright (c) 2020 IIpocTo_To4Ka.
+ * @license   MIT License.
+ * @package   Afoslt Core UnitTests
+ * @note      This code is distributed in the hope that it can help someone. 
+ * The author does not guarantee that this code can somehow work and be useful 
+ * or do anything at all.
+ */
 namespace Afoslt\Tests\Core;
 
 use Afoslt\Controllers\Tests\TestController;
@@ -192,15 +205,5 @@ final class ControllerTest extends TestCase
 
             $this->assertSame($expectedResult, $actualResult, $actionName . " expected " . $expectedResult . " but `ActionName` returned " . $actualResult);
         }
-    }
-
-    /**
-     * Remove test controller.
-     * 
-     * @return void
-     */
-    private function RemoveTestController (): void
-    {
-        
     }
 }

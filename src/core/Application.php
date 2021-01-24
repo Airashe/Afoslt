@@ -8,7 +8,7 @@
  * @author    Artem Khitsenko <eblludu247@gmail.com>
  * @copyright Copyright (c) 2020 IIpocTo_To4Ka.
  * @license   MIT License.
- * @package   Afoslt
+ * @package   Afoslt Core
  * @note      This code is distributed in the hope that it can help someone. 
  * The author does not guarantee that this code can somehow work and be useful 
  * or do anything at all.
