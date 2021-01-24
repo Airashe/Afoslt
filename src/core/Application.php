@@ -313,7 +313,7 @@ class Application
 
         $this->LoadManifest();
 
-        if(Application::GetManifest()['startupSession'])
+        if(Application::GetManifest()['startupSession'] && session_status() === PHP_SESSION_NONE && headers_sent() === false)
             session_start();
 
         $this->SetRouter(new Router($this->LoadRoutes()));
