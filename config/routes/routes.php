@@ -26,6 +26,5 @@
  */
 return [
     '/' => ['controller' => 'Examples\Example',  
-            'action' => 'Example', 
-            'layout' => 'example\exampleLayout'], 
+            'action' => 'Example'], 
 ];

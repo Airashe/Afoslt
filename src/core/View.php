@@ -141,10 +141,15 @@ class View
                 $this->SetTitle(Application::GetManifest()['name']);
             else
                 $this->SetTitle("No Title");
-        
-        if(is_array($this->GetArguments()))
-            extract($arguments);
 
+        if(is_array($this->GetArguments()))
+            extract($this->arguments);
+
+        if(!empty(Application::GetLayout())) {
+            echo 1;
+        } else {
+            echo "Application layout";
+        }
     }
 
     /**

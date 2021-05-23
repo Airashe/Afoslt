@@ -291,9 +291,9 @@ class Application
     /**
      * Name of layout's file that will be used for view render.
      * 
-     * @return string
+     * @return string|null
      */
-    public static final function GetLayout (): string
+    public static final function GetLayout (): ?string
     {
         return Application::$layoutName;
     }
@@ -496,9 +496,11 @@ class Application
      */
     protected function Response ($result): void
     {
-        if(gettype($result) === "object" && is_subclass_of($result, "Afoslt\Core\View")) {
-            $result->Render();
-            return;
+        if(gettype($result) === "object") {
+            if(is_a($result, "Afoslt\Core\View") || is_subclass_of($result, "Afoslt\Core\View")) {
+                $result->Render();
+                return;
+            }
         }
         echo json_encode($result);
     }
