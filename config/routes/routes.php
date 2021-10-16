@@ -14,10 +14,10 @@
  * %action_name% - Name of the action of controller, that will be called.
  * %layout_name% - Name of layout file, that will be used for view render.
  *
- * @see       https://github.com/IIpocToTo4Ka/Afoslt - Afoslt GitHub repository.
+ * @see       https://github.com/Airashe/Afoslt - Afoslt GitHub repository.
  *
  * @author    Artem Khitsenko <eblludu247@gmail.com>
- * @copyright Copyright (c) 2020 IIpocTo_To4Ka.
+ * @copyright Copyright (c) 2020 Airashe.
  * @license   MIT License.
  * @package   Afoslt
  * @note      This code is distributed in the hope that it can help someone. 

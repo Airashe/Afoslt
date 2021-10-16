@@ -6,7 +6,7 @@ This documentation should help you to understand how structure of this ~~piece o
 
 ## Setup
 
-1. Clone Afoslt Core Github repository to your machine: `git clone https://IIpocToTo4Ka/Afoslt` 
+1. Clone Afoslt Core Github repository to your machine: `git clone https://Airashe/Afoslt` 
 2. Using composer and terminal install all dependencies that Afoslt requires: `composer install`
 3. Run unit tests to check that everything is fine.
 
