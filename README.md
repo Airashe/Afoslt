@@ -16,4 +16,4 @@ Now you are ready to use Afoslt Core.
 
 ## Whats next?
 
-Check out [documentation](https://github.com/IIpocToTo4Ka/Afoslt/wiki) for more information.
+Check out [documentation](https://github.com/Airashe/Afoslt/wiki) for more information.
